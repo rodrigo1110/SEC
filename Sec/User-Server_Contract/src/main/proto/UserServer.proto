@@ -1,0 +1,45 @@
+syntax = "proto3";
+package pt.tecnico.grpc;
+
+message HelloRequest {
+	string name = 1;
+	repeated string hobbies = 2;
+	// There are many more basics types, like Enum, Map
+	// See https://developers.google.com/protocol-buffers/docs/proto3
+	// for more information.
+}
+
+message HelloResponse {
+	string greeting = 1;
+}
+
+message uploadRequest{
+	string fileId = 1;
+	bytes fileContent = 2;
+	bytes symmetricKey = 3;
+	bytes initializationVector = 4;
+	bytes timeStamp = 5;
+	bytes cookie = 6;
+	bytes hashMessage = 7; 
+}
+
+message uploadResponse{
+}
+
+message signUpRequest{
+	string userName = 1;
+	bytes password = 2;
+	bytes publicKeyClient = 3;
+	bytes timeStamp = 4;
+	bytes hashMessage = 5;
+}
+
+message signUpResponse{
+}
+
+
+service UserServerService {
+	rpc greeting(HelloRequest) returns (HelloResponse);
+	rpc signUp(signUpRequest) returns (signUpResponse);
+	rpc upload(uploadRequest) returns (uploadResponse);
+}
