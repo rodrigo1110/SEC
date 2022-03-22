@@ -13,33 +13,33 @@ message HelloResponse {
 	string greeting = 1;
 }
 
-message uploadRequest{
-	string fileId = 1;
-	bytes fileContent = 2;
-	bytes symmetricKey = 3;
-	bytes initializationVector = 4;
-	bytes timeStamp = 5;
-	bytes cookie = 6;
-	bytes hashMessage = 7; 
+
+
+message openAccountRequest{
+	bytes publicKeyClient = 1;
+	int32 sequenceNumber = 2;
+	bytes hashMessage = 3;
 }
 
-message uploadResponse{
+message openAccountResponse{
+	float balance = 1; 
 }
 
-message signUpRequest{
-	string userName = 1;
-	bytes password = 2;
-	bytes publicKeyClient = 3;
-	bytes timeStamp = 4;
+message sendAmountRequest{
+	bytes publicKeySender = 1;
+	bytes publicKeyReceiver = 2;
+	float amount = 3;
+	int32 sequenceNumber = 4;
 	bytes hashMessage = 5;
 }
 
-message signUpResponse{
+message sendAmountResponse{
+	int32 transferId = 1;
 }
 
 
 service UserServerService {
 	rpc greeting(HelloRequest) returns (HelloResponse);
-	rpc signUp(signUpRequest) returns (signUpResponse);
-	rpc upload(uploadRequest) returns (uploadResponse);
+	rpc openAccount(openAccountRequest) return (openAccountResponse);
+	rpc sendAmount(sendAmountRequest) return (sendAmountResponse);
 }

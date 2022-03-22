@@ -32,5 +32,25 @@ public class ServerServiceImpl extends UserServerServiceGrpc.UserServerServiceIm
 		catch (Exception e){
 			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
 		}
-	}	
+	}
+
+
+	@Override
+	public void openAccount(UserServer.openAccountRequest request, StreamObserver<UserServer.openAccountResponse> responseObserver) {
+		System.out.println(request);
+
+		try{
+			UserServer.openAccountResponse response = UserServer.openAccountResponse.newBuilder()
+					.setBalance(server.openAccount(request.getPublicKeyClient(), 
+					request.getSequenceNumber(), request.getHashMessage())).build();
+			responseObserver.onNext(response);
+			responseObserver.onCompleted();
+		}
+		catch (Exception e){
+			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+		}
+	}		
+
+
+
 }

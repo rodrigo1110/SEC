@@ -17,15 +17,65 @@ import java.nio.file.*;
 
 public class ServerImpl {
     
-    private String userName;
-    private String password;
+    private final float INITIAL_BALANCE = 50;
     private Key privateKey;
     private Key publicKey;
     private boolean hasKeys = false;
+    private int seqNumber = 0;
 
-    
-    public String greet(String name){
-        return "Hello my dear " + name + "!";
+
+    //private Account[] accounts; //dictionary or find function
+    //private Movement[] movements; //dictionary or find function
+
+
+    public float open_account(ByteString clientPublicKey, int sequenceNumber, ByteString hashMessage){
+        
+        //if(sequenceNumber != seqNumber + 1)
+        //    throw new SequenceNumberException();
+        //seqNumber++;
+        
+        ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
+        messageBytes.write(publicKey.toByteArray());
+        messageBytes.write(":".getBytes());
+        messageBytes.write(String.valueOf(seqNumber).getBytes());
+        
+        String hashMessageString = decrypt(clientPublicKey.toByteArray(), hashMessage.toByteArray());
+        if(!verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
+            throw new MessageIntegrityException();
+        
+        
+        //see if key already exists in db - Larissa
+
+        Account acc = new Account(clientPublicKey, INITIAL_BALANCE);
+
+        //save in database - Larissa
+        return acc.getBalance();
+    }
+
+
+    public void send_amount(Key source, Key destination, int amount, int sequenceNumber, ByteString hashMessage){
+        //see if source exists
+        //see if has balance source.has_balance(amount)
+        //see if destination exists
+        //source.transfer(amount)
+        //create movement(source, destinaiton, amount)
+    }
+
+    public void check_account(Key key){
+        //see if key exists
+        //get balance of account
+        //get list of movement with key on destination account and state = PENDING 
+    }
+
+    public void receive_amount(Key key, int id){
+        //see if key exists
+        //see if movement id exists
+        //change state of movement
+        //update balance of key
+    }
+    public void audit(Key key){
+        
+        //get list of movement with key on origin or destination account and state = wtv
     }
 
     public static Key getPublicKey(String filename) throws Exception {
@@ -96,8 +146,12 @@ public class ServerImpl {
     }
 
    
-    private String decrypt(Key key, byte[] buffer) {
+    private String decrypt(byte[] keyBytes, byte[] buffer) {
         try {
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA"); 
+            Key key = keyFactory.generatePublic(keySpec);
+
             Cipher rsa;
             rsa = Cipher.getInstance("RSA");
             rsa.init(Cipher.DECRYPT_MODE, key);
