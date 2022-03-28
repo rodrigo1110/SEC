@@ -16,10 +16,10 @@ import java.nio.file.*;
 
 public class Account{
     private Integer id;
-    private Key publicKey;
+    private ByteString publicKey;
     private float balance;
 
-    public Account(Key _publicKey, float _balance){
+    public Account(ByteString _publicKey, float _balance){
         publicKey = _publicKey;
         balance = _balance;
     }

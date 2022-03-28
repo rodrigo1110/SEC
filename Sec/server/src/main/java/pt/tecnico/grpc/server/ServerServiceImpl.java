@@ -56,7 +56,11 @@ public class ServerServiceImpl extends UserServerServiceGrpc.UserServerServiceIm
 		System.out.println(request);
 
 		try{
-			
+			UserServer.sendAmountResponse response = UserServer.sendAmountResponse.newBuilder()
+				.setTransferId(server.send_amount(request.getPublicKeySender(), request.getPublicKeySender(), request.getAmount(),
+				request.getSequenceNumber(), request.getHashMessage())).build();
+			responseObserver.onNext(response);
+			responseObserver.onCompleted();
 		}
 		catch (Exception e){
 			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
@@ -64,11 +68,14 @@ public class ServerServiceImpl extends UserServerServiceGrpc.UserServerServiceIm
 	}	
 
 	@Override
-	public void checkAmount(UserServer.checkAmountRequest request, StreamObserver<UserServer.checkAmountResponse> responseObserver) {
+	public void checkAccount(UserServer.checkAccountRequest request, StreamObserver<UserServer.checkAccountResponse> responseObserver) {
 		System.out.println(request);
 
 		try{
-			
+			UserServer.checkAccountResponse response = UserServer.checkAccountResponse.newBuilder()
+				.setNumberMovements(server.check_account(request.getPublicKeyClient())).build(); //is wrong, needs to pass int[] to repeated
+			responseObserver.onNext(response);
+			responseObserver.onCompleted();
 		}
 		catch (Exception e){
 			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
@@ -92,7 +99,10 @@ public class ServerServiceImpl extends UserServerServiceGrpc.UserServerServiceIm
 		System.out.println(request);
 
 		try{
-			
+			UserServer.receiveAmountResponse response = UserServer.receiveAmountResponse.newBuilder()
+				.setDone(server.receive_amount(request.getPublicKeyClient(), request.getMovementId())).build();
+			responseObserver.onNext(response);
+			responseObserver.onCompleted();	
 		}
 		catch (Exception e){
 			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());

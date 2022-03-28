@@ -1,6 +1,6 @@
 package pt.tecnico.grpc.server;
 
-import org.apache.ibatis.jdbc.ScriptRunner;
+//import org.apache.ibatis.jdbc.ScriptRunner;
 
 import java.awt.*;
 import java.io.*;
@@ -35,11 +35,12 @@ public class ServerRepo {
             connection = this.newConnection();
             this.logger.log("Connected to database successfully!");
 
-            ScriptRunner scriptRunner = new ScriptRunner(connection);
-            scriptRunner.setLogWriter(null);
-            scriptRunner.runScript(new BufferedReader(new FileReader(this.dbDir)));
+            //ScriptRunner scriptRunner = new ScriptRunner(connection);
+            //scriptRunner.setLogWriter(null);
+            //scriptRunner.runScript(new BufferedReader(new FileReader(this.dbDir)));
             this.logger.log("Database structure created successfully!");
-        } catch (SQLException | FileNotFoundException e) {
+        //} catch (SQLException | FileNotFoundException e) { //exception java.io.FileNotFoundException is never thrown in body of corresponding try statement 
+        } catch (SQLException e) { //exception java.io.FileNotFoundException is never thrown in body of corresponding try statement 
             this.logger.log(e.getMessage());
         }
         finally {
@@ -87,7 +88,7 @@ public class ServerRepo {
         }
     }
 
-    public int getAccount(String pubKey) throws SQLException {
+    public float getAccount(String pubKey) throws SQLException {
         try {
             String query = "SELECT * FROM account WHERE pubKey=?";
             connection = this.newConnection();
@@ -96,7 +97,7 @@ public class ServerRepo {
 
             resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                return resultSet.getString("balance");             
+                return resultSet.getFloat("balance");             
             }
             return -1;
         } finally{
@@ -110,7 +111,7 @@ public class ServerRepo {
             connection = this.newConnection();
             statement = connection.prepareStatement(query);
             statement.setString(1, pubKey);
-            statement.setString(2, balance);
+            //statement.setString(2, balance);
             statement.executeUpdate();
         } finally {
             closeConnection();

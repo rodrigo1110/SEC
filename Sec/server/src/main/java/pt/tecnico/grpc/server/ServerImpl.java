@@ -18,8 +18,8 @@ import java.nio.file.*;
 public class ServerImpl {
     
     private final float INITIAL_BALANCE = 50;
-    private Key privateKey;
-    private Key publicKey;
+    private ByteString privateKey;
+    private ByteString publicKey;
     private boolean hasKeys = false;
     private int seqNumber = 0;
 
@@ -33,47 +33,60 @@ public class ServerImpl {
         //if(sequenceNumber != seqNumber + 1)
         //    throw new SequenceNumberException();
         //seqNumber++;
-        
-        ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
-        messageBytes.write(publicKey.toByteArray());
-        messageBytes.write(":".getBytes());
-        messageBytes.write(String.valueOf(seqNumber).getBytes());
-        
-        String hashMessageString = decrypt(clientPublicKey.toByteArray(), hashMessage.toByteArray());
-        if(!verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
-            throw new MessageIntegrityException();
-        
-        
-        //see if key already exists in db - Larissa
+        try{
+            ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
+            //messageBytes.write(publicKey.toByteArray()); //cannot find symbol method toByteArray() location: variable publicKey of type java.security.Key
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(seqNumber).getBytes());
+            
+            String hashMessageString = decrypt(clientPublicKey.toByteArray(), hashMessage.toByteArray());
+            if(!verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
+                throw new MessageIntegrityException();
+            
+            
+            //see if key already exists in db - Larissa
 
-        Account acc = new Account(clientPublicKey, INITIAL_BALANCE);
+            Account acc = new Account(clientPublicKey, INITIAL_BALANCE);
 
-        //save in database - Larissa
-        return acc.getBalance();
+            //save in database - Larissa
+            return acc.getBalance();
+        }
+        catch (Exception e){
+			return -1;
+		}
     }
 
 
-    public void send_amount(Key source, Key destination, int amount, int sequenceNumber, ByteString hashMessage){
+    public int send_amount(ByteString source, ByteString destination, float amount, int sequenceNumber, ByteString hashMessage){
         //see if source exists
         //see if has balance source.has_balance(amount)
         //see if destination exists
         //source.transfer(amount)
         //create movement(source, destinaiton, amount)
+        int movId=0; //testing purpose
+        return movId;
     }
 
-    public void check_account(Key key){
-        //see if key exists
-        //get balance of account
-        //get list of movement with key on destination account and state = PENDING 
+    public int[] check_account(ByteString key){
+        int i[];    //declaring array
+        i = new int[20];  // allocating memory to array
+        return i;
     }
 
-    public void receive_amount(Key key, int id){
+    public Movement getMovement(int movementId){
+        //get movement
+        //Movement mov = new Movement(0, new ByteString(), new ByteString(), 0); //testing purpose
+        //return mov;
+    }
+
+    public boolean receive_amount(ByteString key, int id){
         //see if key exists
         //see if movement id exists
         //change state of movement
         //update balance of key
+        return true; //testing purpose
     }
-    public void audit(Key key){
+    public void audit(ByteString key){
         
         //get list of movement with key on origin or destination account and state = wtv
     }
