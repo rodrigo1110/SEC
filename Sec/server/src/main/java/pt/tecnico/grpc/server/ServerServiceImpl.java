@@ -19,7 +19,7 @@ public class ServerServiceImpl extends UserServerServiceGrpc.UserServerServiceIm
 	private ServerImpl server = new ServerImpl();
 	
 	
-	@Override
+	/*@Override
 	public void greeting(UserServer.HelloRequest request, StreamObserver<UserServer.HelloResponse> responseObserver) {
 		System.out.println(request);
 
@@ -32,7 +32,7 @@ public class ServerServiceImpl extends UserServerServiceGrpc.UserServerServiceIm
 		catch (Exception e){
 			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
 		}
-	}
+	}*/
 
 
 	@Override
@@ -41,7 +41,7 @@ public class ServerServiceImpl extends UserServerServiceGrpc.UserServerServiceIm
 
 		try{
 			UserServer.openAccountResponse response = UserServer.openAccountResponse.newBuilder()
-					.setBalance(server.openAccount(request.getPublicKeyClient(), 
+					.setBalance(server.open_account(request.getPublicKeyClient(), 
 					request.getSequenceNumber(), request.getHashMessage())).build();
 			responseObserver.onNext(response);
 			responseObserver.onCompleted();
@@ -49,8 +49,66 @@ public class ServerServiceImpl extends UserServerServiceGrpc.UserServerServiceIm
 		catch (Exception e){
 			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
 		}
-	}		
+	}	
 
+	@Override
+	public void sendAmount(UserServer.sendAmountRequest request, StreamObserver<UserServer.sendAmountResponse> responseObserver) {
+		System.out.println(request);
 
+		try{
+			
+		}
+		catch (Exception e){
+			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+		}
+	}	
+
+	@Override
+	public void checkAmount(UserServer.checkAmountRequest request, StreamObserver<UserServer.checkAmountResponse> responseObserver) {
+		System.out.println(request);
+
+		try{
+			
+		}
+		catch (Exception e){
+			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+		}
+	}
+
+	@Override
+	public void checkMovement(UserServer.checkMovementRequest request, StreamObserver<UserServer.checkMovementResponse> responseObserver) {
+		System.out.println(request);
+
+		try{
+			
+		}
+		catch (Exception e){
+			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+		}
+	}
+
+	@Override
+	public void receiveAmount(UserServer.receiveAmountRequest request, StreamObserver<UserServer.receiveAmountResponse> responseObserver) {
+		System.out.println(request);
+
+		try{
+			
+		}
+		catch (Exception e){
+			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+		}
+	}
+
+	@Override
+	public void audit(UserServer.auditRequest request, StreamObserver<UserServer.auditResponse> responseObserver) {
+		System.out.println(request);
+
+		try{
+			
+		}
+		catch (Exception e){
+			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+		}
+	}
 
 }

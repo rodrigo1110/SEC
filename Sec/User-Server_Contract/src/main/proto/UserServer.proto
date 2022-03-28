@@ -37,7 +37,7 @@ message sendAmountResponse{
 	int32 transferId = 1;
 }
 
-message checkAmoutRequest{
+message checkAmountRequest{
 	bytes publicKeyClient = 1;
 	int32 sequenceNumber = 2;
 	bytes hashMessage = 3;
@@ -84,7 +84,7 @@ service UserServerService {
 	rpc greeting(HelloRequest) returns (HelloResponse);
 	rpc openAccount(openAccountRequest) returns (openAccountResponse);
 	rpc sendAmount(sendAmountRequest) returns (sendAmountResponse);
-	rpc checkAmount(checkAmoutRequest) returns (checkAmountResponse);
+	rpc checkAmount(checkAmountRequest) returns (checkAmountResponse);
 	rpc checkMovement(checkMovementRequest) returns (checkMovementResponse);
 	rpc receiveAmount(receiveAmountRequest) returns (receiveAmountResponse);
 	rpc audit(auditRequest) returns (auditResponse);

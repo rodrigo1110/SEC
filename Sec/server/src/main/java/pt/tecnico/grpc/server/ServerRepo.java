@@ -96,7 +96,7 @@ public class ServerRepo {
 
             resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                return resultSet.getString("balance")             
+                return resultSet.getString("balance");             
             }
             return -1;
         } finally{
@@ -116,3 +116,4 @@ public class ServerRepo {
             closeConnection();
         }
     }
+}

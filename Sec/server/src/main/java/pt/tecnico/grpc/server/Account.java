@@ -1,5 +1,19 @@
 package pt.tecnico.grpc.server;
 
+import pt.tecnico.grpc.UserServer;
+import pt.tecnico.grpc.server.exceptions.*;
+import io.grpc.StatusRuntimeException;
+
+import java.math.BigInteger;
+import com.google.common.primitives.Bytes;
+import com.google.protobuf.ByteString;
+
+import javax.crypto.Cipher;
+import java.security.*;
+import java.security.spec.*;
+import java.io.*;
+import java.nio.file.*;
+
 public class Account{
     private Integer id;
     private Key publicKey;
@@ -14,7 +28,7 @@ public class Account{
         return balance;
     }
 
-    public bool has_balance(int amount){
+    public boolean has_balance(int amount){
         return balance>=amount;
     }
 

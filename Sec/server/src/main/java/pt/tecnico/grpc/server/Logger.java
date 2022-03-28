@@ -1,4 +1,4 @@
-"esta é uma classe que imprime as mensagens de forma fancy"
+//"esta é uma classe que imprime as mensagens de forma fancy"
 package pt.tecnico.grpc.server;
 
 import java.sql.Timestamp;
