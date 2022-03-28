@@ -37,9 +37,55 @@ message sendAmountResponse{
 	int32 transferId = 1;
 }
 
+message checkAmoutRequest{
+	bytes publicKeyClient = 1;
+	int32 sequenceNumber = 2;
+	bytes hashMessage = 3;
+}
+
+message checkAmountResponse{
+	repeated int32 numberMovements = 1;
+}
+
+message checkMovementRequest{
+	bytes publicKeyClient = 1;
+	int32 numberMovement = 2;
+}
+
+message checkMovementResponse{
+	int32 id = 1;
+    bytes originAcc = 2;
+    bytes destAcc = 3;
+    float amount = 4;
+    string state = 5;
+}
+
+message receiveAmountRequest{
+	bytes publicKeyClient = 1;
+	int32 movementId = 2;
+}
+
+message receiveAmountResponse{
+	bool done = 1;
+}
+
+message auditRequest{
+	bytes publicKeyClient = 1;
+	int32 sequenceNumber = 2;
+	bytes hashMessage = 3;
+}
+
+message auditResponse{
+	repeated int32 numberMovements = 1;
+}
+
 
 service UserServerService {
 	rpc greeting(HelloRequest) returns (HelloResponse);
-	rpc openAccount(openAccountRequest) return (openAccountResponse);
-	rpc sendAmount(sendAmountRequest) return (sendAmountResponse);
+	rpc openAccount(openAccountRequest) returns (openAccountResponse);
+	rpc sendAmount(sendAmountRequest) returns (sendAmountResponse);
+	rpc checkAmount(checkAmoutRequest) returns (checkAmountResponse);
+	rpc checkMovement(checkMovementRequest) returns (checkMovementResponse);
+	rpc receiveAmount(receiveAmountRequest) returns (receiveAmountResponse);
+	rpc audit(auditRequest) returns (auditResponse);
 }
