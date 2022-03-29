@@ -1,6 +1,6 @@
 package pt.tecnico.grpc.server;
 
-//import org.apache.ibatis.jdbc.ScriptRunner;
+import org.apache.ibatis.jdbc.ScriptRunner;
 
 import java.awt.*;
 import java.io.*;
@@ -35,12 +35,11 @@ public class ServerRepo {
             connection = this.newConnection();
             this.logger.log("Connected to database successfully!");
 
-            //ScriptRunner scriptRunner = new ScriptRunner(connection);
-            //scriptRunner.setLogWriter(null);
-            //scriptRunner.runScript(new BufferedReader(new FileReader(this.dbDir)));
-            this.logger.log("Database structure created successfully!");
-        //} catch (SQLException | FileNotFoundException e) { //exception java.io.FileNotFoundException is never thrown in body of corresponding try statement 
-        } catch (SQLException e) { //exception java.io.FileNotFoundException is never thrown in body of corresponding try statement 
+            ScriptRunner scriptRunner = new ScriptRunner(connection);
+            scriptRunner.setLogWriter(null);
+            scriptRunner.runScript(new BufferedReader(new FileReader(this.dbDir)));
+            this.logger.log("Database structure created successfully!"); 
+        } catch (SQLException | FileNotFoundException e) {
             this.logger.log(e.getMessage());
         }
         finally {
@@ -111,7 +110,7 @@ public class ServerRepo {
             connection = this.newConnection();
             statement = connection.prepareStatement(query);
             statement.setString(1, pubKey);
-            //statement.setString(2, balance);
+            statement.setInt(2, balance);
             statement.executeUpdate();
         } finally {
             closeConnection();
