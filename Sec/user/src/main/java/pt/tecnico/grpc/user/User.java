@@ -3,6 +3,7 @@ package pt.tecnico.grpc.user;
 
 import pt.tecnico.grpc.UserServer;
 import pt.tecnico.grpc.UserServerServiceGrpc;
+import com.google.protobuf.ByteString;
 
 import java.util.Scanner;
 
@@ -36,10 +37,6 @@ public class User {
 
 		try{
 			UserImpl user = new UserImpl(target);
-		
-			System.out.println("==========================");
-			System.out.print("= BFT Banking =\n");
-			System.out.println("==========================");
 
 			System.out.println("Type 'help' to see avaliable operations.");
 
@@ -50,16 +47,32 @@ public class User {
 
 				try{
 					switch (command[0]) {
-						case "hello":
-							user.hello();
-							break;
-						case "signup":
+						/*case "signup":
 							user.signup();
+							break;*/
+						case "open":
+							user.open();
+							break;
+						case "send": //or send
+							user.send(ByteString.copyFromUtf8(command[1]), Float.parseFloat(command[2]));
+							break;
+						case "check": //or send
+							user.check();
+							break;
+						case "receive": //or send
+							user.receive(Integer.parseInt(command[1]));
+							break;
+						case "audit": //or send
+							user.audit();
 							break;
 						case "help":
 							System.out.printf("Avaliable operations:\n");
-							System.out.printf(" - signup\n");
-							System.out.printf(" - hello\n");
+							//System.out.printf(" - signup -> create credentials (necessary only once) \n");
+							System.out.printf(" - open -> open account \n");
+							System.out.printf(" - send (1) (2) -> send amount (2) to who (1) \n");
+							System.out.printf(" - check -> check balance and pending movements of account \n");
+							System.out.printf(" - receive (1) -> approve movement (1) \n");
+							System.out.printf(" - audit -> check balance and all movements of account\n");
 							System.out.printf(" - exit\n");
 							break;
 						case "exit":

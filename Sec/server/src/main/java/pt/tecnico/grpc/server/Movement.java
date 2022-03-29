@@ -21,8 +21,10 @@ public class Movement{
     private float amount;
     private TransactionState state;
 
-    public Movement(int _id, ByteString _originAcc, ByteString _destAcc, float _amount){
-        id=_id;
+    public Movement(){
+    }
+
+    public Movement(ByteString _originAcc, ByteString _destAcc, float _amount){
         originAcc=_originAcc;
         destAcc=_destAcc;
         amount=_amount;

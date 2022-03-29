@@ -73,7 +73,8 @@ public class ServerServiceImpl extends UserServerServiceGrpc.UserServerServiceIm
 
 		try{
 			UserServer.checkAccountResponse response = UserServer.checkAccountResponse.newBuilder()
-				.setNumberMovements(server.check_account(request.getPublicKeyClient())).build(); //is wrong, needs to pass int[] to repeated
+				//.addAllNumberMovements(server.check_account(request.getPublicKeyClient())).setBalance(server.check_account_balance(request.getPublicKeyClient()))
+				.build();
 			responseObserver.onNext(response);
 			responseObserver.onCompleted();
 		}
@@ -119,8 +120,9 @@ public class ServerServiceImpl extends UserServerServiceGrpc.UserServerServiceIm
 		System.out.println(request);
 
 		try{
-			UserServer.checkAccountResponse response = UserServer.checkAccountResponse.newBuilder()
-				.setNumberMovements(server.audit(request.getPublicKeyClient())).build(); //is wrong, needs to pass int[] to repeated
+			UserServer.auditResponse response = UserServer.auditResponse.newBuilder()
+				.addAllNumberMovements(server.audit(request.getPublicKeyClient())).setBalance(server.check_account_balance(request.getPublicKeyClient()))
+				.build();
 			responseObserver.onNext(response);
 			responseObserver.onCompleted();
 		}

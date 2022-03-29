@@ -7,6 +7,8 @@ import io.grpc.StatusRuntimeException;
 import java.math.BigInteger;
 import com.google.common.primitives.Bytes;
 import com.google.protobuf.ByteString;
+import java.util.List;
+import java.util.ArrayList;
 
 import javax.crypto.Cipher;
 import java.security.*;
@@ -28,56 +30,85 @@ public class ServerImpl {
     //private Movement[] movements; //dictionary or find function
 
 
-    public float open_account(ByteString clientPublicKey, int sequenceNumber, ByteString hashMessage){
+    public float open_account(ByteString clientPublicKey, int sequenceNumber, ByteString hashMessage) throws Exception{
         
         //if(sequenceNumber != seqNumber + 1)
         //    throw new SequenceNumberException();
         //seqNumber++;
-        try{
-            ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
-            //messageBytes.write(publicKey.toByteArray()); //cannot find symbol method toByteArray() location: variable publicKey of type java.security.Key
-            messageBytes.write(":".getBytes());
-            messageBytes.write(String.valueOf(seqNumber).getBytes());
-            
-            String hashMessageString = decrypt(clientPublicKey.toByteArray(), hashMessage.toByteArray());
-            if(!verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
-                throw new MessageIntegrityException();
-            
-            
-            //see if key already exists in db - Larissa
+        
+        ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
+        messageBytes.write(clientPublicKey.toByteArray());
+        messageBytes.write(":".getBytes());
+        messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+        
+        String hashMessageString = decrypt(clientPublicKey.toByteArray(), hashMessage.toByteArray());
+        if(!verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
+            throw new MessageIntegrityException();
+        
+        
+        //see if key already exists in db (if it does throw user already existent exception) - Larissa
 
-            Account acc = new Account(clientPublicKey, INITIAL_BALANCE);
+        Account acc = new Account(clientPublicKey, INITIAL_BALANCE);
 
-            //save in database - Larissa
-            return acc.getBalance();
-        }
-        catch (Exception e){
-			return -1;
-		}
+        //save in database - Larissa
+        return acc.getBalance();
     }
 
 
-    public int send_amount(ByteString source, ByteString destination, float amount, int sequenceNumber, ByteString hashMessage){
-        //see if source exists
-        //see if has balance source.has_balance(amount)
-        //see if destination exists
-        //source.transfer(amount)
-        //create movement(source, destinaiton, amount)
+    public int send_amount(ByteString sourcePublicKey, ByteString destinationPublicKey, float amount, int sequenceNumber, ByteString hashMessage) throws Exception{
+
+        //Seq number verification --> sequence number exception
+
+        ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
+        messageBytes.write(sourcePublicKey.toByteArray());
+        messageBytes.write(":".getBytes());
+        messageBytes.write(destinationPublicKey.toByteArray());
+        messageBytes.write(":".getBytes());
+        messageBytes.write(String.valueOf(amount).getBytes());
+        messageBytes.write(":".getBytes());
+        messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+        
+        String hashMessageString = decrypt(sourcePublicKey.toByteArray(), hashMessage.toByteArray());
+        if(!verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
+            throw new MessageIntegrityException();
+        
+        //see if source and destination exist in DB --> Unknown user exception
+        //see if has balance source.has_balance(amount) --> Not enough balance exception
+        
+        //create movement(source, destination, amount) then add it to db
+        
         int movId=0; //testing purpose
         return movId;
     }
 
-    public int[] check_account(ByteString key){
+    public List<Integer> check_account(ByteString clientPublicKey, int sequenceNumber, ByteString hashMessage) throws Exception{
+        
+        //Seq number verification --> sequence number exception
+
+        ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
+        messageBytes.write(clientPublicKey.toByteArray());
+        messageBytes.write(String.valueOf(seqNumber).getBytes());
+        
+        String hashMessageString = decrypt(clientPublicKey.toByteArray(), hashMessage.toByteArray());
+        if(!verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
+            throw new MessageIntegrityException();
+        
         //get ids of movements to send
-        int i[];    //declaring array
-        i = new int[20];  // allocating memory to array
+        List<Integer> i = new ArrayList<Integer>();    //Just for test
+        i.add(20);
+        return i;
+    }
+
+    public float check_account_balance(ByteString key){
+        //get balance of account
+        float i = 0; //testing purpose
         return i;
     }
 
     public Movement getMovement(int movementId){
         //get movement
-        //Movement mov = new Movement(0, new ByteString(), new ByteString(), 0); //testing purpose
-        //return mov;
+        Movement mov = new Movement(); //testing purpose
+        return mov;
     }
 
     public boolean receive_amount(ByteString key, int id){
@@ -87,8 +118,11 @@ public class ServerImpl {
         //update balance of key
         return true; //testing purpose
     }
-    public int[] audit(ByteString key){
+    public List<Integer> audit(ByteString key){
         //get list of movement ids with key on origin or destination account and state = wtv
+        List<Integer> i = new ArrayList<Integer>();    //declaring array
+        i.add(20);
+        return i;
     }
 
     public static Key getPublicKey(String filename) throws Exception {

@@ -45,11 +45,14 @@ message checkAccountRequest{
 
 message checkAccountResponse{
 	repeated int32 numberMovements = 1;
+	float balance = 2;
 }
 
 message checkMovementRequest{
 	bytes publicKeyClient = 1;
 	int32 numberMovement = 2;
+	int32 sequenceNumber = 3;
+	bytes hashMessage = 4;
 }
 
 message checkMovementResponse{
@@ -63,6 +66,8 @@ message checkMovementResponse{
 message receiveAmountRequest{
 	bytes publicKeyClient = 1;
 	int32 movementId = 2;
+	int32 sequenceNumber = 3;
+	bytes hashMessage = 4;
 }
 
 message receiveAmountResponse{
@@ -77,6 +82,7 @@ message auditRequest{
 
 message auditResponse{
 	repeated int32 numberMovements = 1;
+	float balance = 2;
 }
 
 

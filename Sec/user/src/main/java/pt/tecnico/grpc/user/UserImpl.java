@@ -205,5 +205,73 @@ public class UserImpl {
         //messageBytes.write(encryptedTimeStamp.toByteArray());
         String hashMessage = hashMessage(new String(messageBytes.toByteArray()));
         ByteString encryptedHashMessage = ByteString.copyFrom(encrypt(privateKey, hashMessage.getBytes()));
-    }    
+    }   
+
+    public void open() throws Exception{
+    
+		UserServer.openAccountRequest request = UserServer.openAccountRequest.newBuilder()
+        //.setPublicKeyClient(publicKey.getEncoded()).setSequenceNumber().setHashMessage()
+        .build(); //TODO setters
+
+		UserServer.openAccountResponse response = stub.openAccount(request);
+		System.out.println(response);
+        
+    }
+
+    public void send(ByteString DestAcc, float amount) throws Exception{
+    
+		UserServer.sendAmountRequest request = UserServer.sendAmountRequest.newBuilder()
+        //.setPublicKeySender(publicKey.getEncoded()).setPublicKeySender(DestAcc).setAmount(amount).setSequenceNumber().setHashMessage()
+        .build(); //TODO setters
+
+		UserServer.sendAmountResponse response = stub.sendAmount(request);
+		System.out.println(response);
+    }
+
+    public void receive(int movid) throws Exception{
+    
+		UserServer.receiveAmountRequest request = UserServer.receiveAmountRequest.newBuilder()
+        //.setMovementId(movid).setPublicKeyClient(publicKey.getEncoded())
+        .build();
+
+		UserServer.receiveAmountResponse response = stub.receiveAmount(request);
+		System.out.println(response);
+    } 
+
+    public void checkMovement(int id){ //not called by user
+
+        UserServer.checkMovementRequest request = UserServer.checkMovementRequest.newBuilder()
+        .setPublicKeyClient(publicKey.getEncoded()).setMovementId(id)
+        .build();
+
+        UserServer.checkMovementResponse response = stub.checkMovement(request);
+		System.out.println(response);
+    }
+
+    public void check() throws Exception{
+    
+		UserServer.checkAccountRequest request = UserServer.checkAccountRequest.newBuilder()
+        //.setPublicKeyClient(publicKey.getEncoded()).setSequenceNumber().setHashMessage()
+        .build();
+
+		UserServer.checkAccountResponse response = stub.checkAccount(request);
+		System.out.println(response);
+
+        //proceeds to ask for the movements
+    }
+
+    public void audit() throws Exception{
+    
+		UserServer.auditRequest request = UserServer.auditRequest.newBuilder()
+        //.setPublicKeyClient(publicKey.getEncoded()).setSequenceNumber().setHashMessage()
+        .build();
+
+		UserServer.auditResponse response = stub.audit(request);
+		System.out.println(response);
+
+        //proceeds to ask for the movements
+    }
+
+
+    //audit
 }
