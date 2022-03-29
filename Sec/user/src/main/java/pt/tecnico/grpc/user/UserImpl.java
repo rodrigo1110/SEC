@@ -18,8 +18,6 @@ import java.security.spec.*;
 import java.io.*;
 import java.nio.file.*;
 
-
-
 public class UserImpl {
     
     private final ManagedChannel channel;
@@ -206,20 +204,13 @@ public class UserImpl {
         messageBytes.write(clientPublicKeyBytes);
         messageBytes.write(":".getBytes());
         messageBytes.write(String.valueOf(sequenceNumber).getBytes());
-        //messageBytes.write(encryptedTimeStamp.toByteArray());
         String hashMessage = hashMessage(new String(messageBytes.toByteArray()));
         ByteString encryptedHashMessage = ByteString.copyFrom(encrypt(privateKey, hashMessage.getBytes()));
     }   
 
     public void open() throws Exception{
-        sequenceNumber++;
-        ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
-        messageBytes.write(clientPublicKeyBytes);
-        messageBytes.write(":".getBytes());
-        messageBytes.write(String.valueOf(sequenceNumber).getBytes());
-        //messageBytes.write(encryptedTimeStamp.toByteArray());
-        String hashMessage = hashMessage(new String(messageBytes.toByteArray()));
-        ByteString encryptedHashMessage = ByteString.copyFrom(encrypt(privateKey, hashMessage.getBytes()));
+        
+        ByteString encryptedHashMessage = createHashMessage();
 
 		UserServer.openAccountRequest request = UserServer.openAccountRequest.newBuilder()
         .setPublicKeyClient(ByteString.copyFrom(publicKey.getEncoded()))
@@ -233,14 +224,7 @@ public class UserImpl {
 
     public void send(ByteString DestAcc, float amount) throws Exception{
     
-        sequenceNumber++;
-        ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
-        messageBytes.write(clientPublicKeyBytes);
-        messageBytes.write(":".getBytes());
-        messageBytes.write(String.valueOf(sequenceNumber).getBytes());
-        //messageBytes.write(encryptedTimeStamp.toByteArray());
-        String hashMessage = hashMessage(new String(messageBytes.toByteArray()));
-        ByteString encryptedHashMessage = ByteString.copyFrom(encrypt(privateKey, hashMessage.getBytes()));
+        ByteString encryptedHashMessage = createHashMessage();
 
 		UserServer.sendAmountRequest request = UserServer.sendAmountRequest.newBuilder()
         .setPublicKeySender(ByteString.copyFrom(publicKey.getEncoded())).setPublicKeySender(DestAcc).setAmount(amount)
@@ -253,14 +237,7 @@ public class UserImpl {
 
     public void receive(int movid) throws Exception{
     
-        sequenceNumber++;
-        ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
-        messageBytes.write(clientPublicKeyBytes);
-        messageBytes.write(":".getBytes());
-        messageBytes.write(String.valueOf(sequenceNumber).getBytes());
-        //messageBytes.write(encryptedTimeStamp.toByteArray());
-        String hashMessage = hashMessage(new String(messageBytes.toByteArray()));
-        ByteString encryptedHashMessage = ByteString.copyFrom(encrypt(privateKey, hashMessage.getBytes()));
+        ByteString encryptedHashMessage = createHashMessage();
 
 		UserServer.receiveAmountRequest request = UserServer.receiveAmountRequest.newBuilder()
         .setMovementId(movid).setPublicKeyClient(ByteString.copyFrom(publicKey.getEncoded()))
@@ -272,15 +249,8 @@ public class UserImpl {
     } 
 
     public void checkMovement(int id){ //not called by user
-        try{
-            sequenceNumber++;
-            ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
-            messageBytes.write(clientPublicKeyBytes);
-            messageBytes.write(":".getBytes());
-            messageBytes.write(String.valueOf(sequenceNumber).getBytes());
-            //messageBytes.write(encryptedTimeStamp.toByteArray());
-            String hashMessage = hashMessage(new String(messageBytes.toByteArray()));
-            ByteString encryptedHashMessage = ByteString.copyFrom(encrypt(privateKey, hashMessage.getBytes()));
+
+            ByteString encryptedHashMessage = createHashMessage();
 
             UserServer.checkMovementRequest request = UserServer.checkMovementRequest.newBuilder()
             .setPublicKeyClient(ByteString.copyFrom(publicKey.getEncoded())).setNumberMovement(id)
@@ -289,22 +259,11 @@ public class UserImpl {
 
             UserServer.checkMovementResponse response = stub.checkMovement(request);
             System.out.println(response);
-        }
-        catch (Exception e){
-            System.out.println(e);
-        }
     }
 
     public void check() throws Exception{
     
-        sequenceNumber++;
-        ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
-        messageBytes.write(clientPublicKeyBytes);
-        messageBytes.write(":".getBytes());
-        messageBytes.write(String.valueOf(sequenceNumber).getBytes());
-        //messageBytes.write(encryptedTimeStamp.toByteArray());
-        String hashMessage = hashMessage(new String(messageBytes.toByteArray()));
-        ByteString encryptedHashMessage = ByteString.copyFrom(encrypt(privateKey, hashMessage.getBytes()));
+        ByteString encryptedHashMessage = createHashMessage();
 
 		UserServer.checkAccountRequest request = UserServer.checkAccountRequest.newBuilder()
         .setPublicKeyClient(ByteString.copyFrom(publicKey.getEncoded()))
@@ -318,15 +277,8 @@ public class UserImpl {
     }
 
     public void audit() throws Exception{
-    
-        sequenceNumber++;
-        ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
-        messageBytes.write(clientPublicKeyBytes);
-        messageBytes.write(":".getBytes());
-        messageBytes.write(String.valueOf(sequenceNumber).getBytes());
-        //messageBytes.write(encryptedTimeStamp.toByteArray());
-        String hashMessage = hashMessage(new String(messageBytes.toByteArray()));
-        ByteString encryptedHashMessage = ByteString.copyFrom(encrypt(privateKey, hashMessage.getBytes()));
+
+        ByteString encryptedHashMessage = createHashMessage();
 
 		UserServer.auditRequest request = UserServer.auditRequest.newBuilder()
         .setPublicKeyClient(ByteString.copyFrom(publicKey.getEncoded()))
@@ -337,6 +289,23 @@ public class UserImpl {
 		System.out.println(response);
 
         //proceeds to ask for the movements
+    }
+
+    public ByteString createHashMessage(){
+        try{
+            sequenceNumber++;
+            ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
+            messageBytes.write(clientPublicKeyBytes);
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+            String hashMessage = hashMessage(new String(messageBytes.toByteArray()));
+            ByteString encryptedHashMessage = ByteString.copyFrom(encrypt(privateKey, hashMessage.getBytes()));
+            return encryptedHashMessage;
+        }
+        catch (Exception e){
+            System.out.println(e);
+            return null;
+        }
     }
 
 }
