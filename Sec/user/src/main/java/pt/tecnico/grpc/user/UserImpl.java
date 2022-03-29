@@ -18,6 +18,9 @@ import java.security.spec.*;
 import java.io.*;
 import java.nio.file.*;
 
+import java.util.List;
+import java.util.ArrayList;
+
 public class UserImpl {
     
     private final ManagedChannel channel;
@@ -250,15 +253,15 @@ public class UserImpl {
 
     public void checkMovement(int id){ //not called by user
 
-            ByteString encryptedHashMessage = createHashMessage();
+        ByteString encryptedHashMessage = createHashMessage();
 
-            UserServer.checkMovementRequest request = UserServer.checkMovementRequest.newBuilder()
-            .setPublicKeyClient(ByteString.copyFrom(publicKey.getEncoded())).setNumberMovement(id)
-            .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage)
-            .build();
+        UserServer.checkMovementRequest request = UserServer.checkMovementRequest.newBuilder()
+        .setPublicKeyClient(ByteString.copyFrom(publicKey.getEncoded())).setNumberMovement(id)
+        .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage)
+        .build();
 
-            UserServer.checkMovementResponse response = stub.checkMovement(request);
-            System.out.println(response);
+        UserServer.checkMovementResponse response = stub.checkMovement(request);
+        System.out.println(response);
     }
 
     public void check() throws Exception{
@@ -272,6 +275,11 @@ public class UserImpl {
 
 		UserServer.checkAccountResponse response = stub.checkAccount(request);
 		System.out.println(response);
+        List<Integer> movements = response.getNumberMovementsList();
+        
+        for (int i = 0; i < movements.size(); i++) {
+            checkMovement(movements.get(i));
+        }
 
         //proceeds to ask for the movements
     }
@@ -288,7 +296,11 @@ public class UserImpl {
 		UserServer.auditResponse response = stub.audit(request);
 		System.out.println(response);
 
-        //proceeds to ask for the movements
+        List<Integer> movements = response.getNumberMovementsList();
+        
+        for (int i = 0; i < movements.size(); i++) {
+            checkMovement(movements.get(i));
+        }
     }
 
     public ByteString createHashMessage(){
