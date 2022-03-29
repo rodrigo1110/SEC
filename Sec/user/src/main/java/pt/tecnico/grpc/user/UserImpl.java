@@ -9,6 +9,7 @@ import io.grpc.StatusRuntimeException;
 
 import java.math.BigInteger;
 import com.google.protobuf.ByteString;
+import com.google.protobuf.ByteString.*;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -27,6 +28,8 @@ public class UserImpl {
     private static Key publicKey;
     private static Key serverPublicKey;
     private static String username;
+    private int sequenceNumber;
+    private byte[] clientPublicKeyBytes;
     
 
     public UserImpl(String target) throws Exception{
@@ -35,6 +38,7 @@ public class UserImpl {
         new File("publicKey").mkdirs();
         new File("privateKey").mkdirs();
         serverPublicKey = getPublicKey("../server/rsaPublicKey");
+        sequenceNumber=0;
 	}
 
     public ManagedChannel getChannel(){
@@ -194,23 +198,32 @@ public class UserImpl {
         }
 
         String path = "publicKey/" + userName + "-PublicKey";
-        byte[] clientPublicKeyBytes = Files.readAllBytes(Paths.get(path));
+        clientPublicKeyBytes = Files.readAllBytes(Paths.get(path));
         
-        int seqNumber = 1;
+        sequenceNumber = 1;
         
         ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
         messageBytes.write(clientPublicKeyBytes);
         messageBytes.write(":".getBytes());
-        messageBytes.write(String.valueOf(seqNumber).getBytes());
+        messageBytes.write(String.valueOf(sequenceNumber).getBytes());
         //messageBytes.write(encryptedTimeStamp.toByteArray());
         String hashMessage = hashMessage(new String(messageBytes.toByteArray()));
         ByteString encryptedHashMessage = ByteString.copyFrom(encrypt(privateKey, hashMessage.getBytes()));
     }   
 
     public void open() throws Exception{
-    
+        sequenceNumber++;
+        ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
+        messageBytes.write(clientPublicKeyBytes);
+        messageBytes.write(":".getBytes());
+        messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+        //messageBytes.write(encryptedTimeStamp.toByteArray());
+        String hashMessage = hashMessage(new String(messageBytes.toByteArray()));
+        ByteString encryptedHashMessage = ByteString.copyFrom(encrypt(privateKey, hashMessage.getBytes()));
+
 		UserServer.openAccountRequest request = UserServer.openAccountRequest.newBuilder()
-        //.setPublicKeyClient(publicKey.getEncoded()).setSequenceNumber().setHashMessage()
+        .setPublicKeyClient(ByteString.copyFrom(publicKey.getEncoded()))
+        .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage)
         .build(); //TODO setters
 
 		UserServer.openAccountResponse response = stub.openAccount(request);
@@ -220,8 +233,18 @@ public class UserImpl {
 
     public void send(ByteString DestAcc, float amount) throws Exception{
     
+        sequenceNumber++;
+        ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
+        messageBytes.write(clientPublicKeyBytes);
+        messageBytes.write(":".getBytes());
+        messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+        //messageBytes.write(encryptedTimeStamp.toByteArray());
+        String hashMessage = hashMessage(new String(messageBytes.toByteArray()));
+        ByteString encryptedHashMessage = ByteString.copyFrom(encrypt(privateKey, hashMessage.getBytes()));
+
 		UserServer.sendAmountRequest request = UserServer.sendAmountRequest.newBuilder()
-        //.setPublicKeySender(publicKey.getEncoded()).setPublicKeySender(DestAcc).setAmount(amount).setSequenceNumber().setHashMessage()
+        .setPublicKeySender(ByteString.copyFrom(publicKey.getEncoded())).setPublicKeySender(DestAcc).setAmount(amount)
+        .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage)
         .build(); //TODO setters
 
 		UserServer.sendAmountResponse response = stub.sendAmount(request);
@@ -230,8 +253,18 @@ public class UserImpl {
 
     public void receive(int movid) throws Exception{
     
+        sequenceNumber++;
+        ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
+        messageBytes.write(clientPublicKeyBytes);
+        messageBytes.write(":".getBytes());
+        messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+        //messageBytes.write(encryptedTimeStamp.toByteArray());
+        String hashMessage = hashMessage(new String(messageBytes.toByteArray()));
+        ByteString encryptedHashMessage = ByteString.copyFrom(encrypt(privateKey, hashMessage.getBytes()));
+
 		UserServer.receiveAmountRequest request = UserServer.receiveAmountRequest.newBuilder()
-        //.setMovementId(movid).setPublicKeyClient(publicKey.getEncoded())
+        .setMovementId(movid).setPublicKeyClient(ByteString.copyFrom(publicKey.getEncoded()))
+        .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage)
         .build();
 
 		UserServer.receiveAmountResponse response = stub.receiveAmount(request);
@@ -239,19 +272,43 @@ public class UserImpl {
     } 
 
     public void checkMovement(int id){ //not called by user
+        try{
+            sequenceNumber++;
+            ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
+            messageBytes.write(clientPublicKeyBytes);
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+            //messageBytes.write(encryptedTimeStamp.toByteArray());
+            String hashMessage = hashMessage(new String(messageBytes.toByteArray()));
+            ByteString encryptedHashMessage = ByteString.copyFrom(encrypt(privateKey, hashMessage.getBytes()));
 
-        UserServer.checkMovementRequest request = UserServer.checkMovementRequest.newBuilder()
-        .setPublicKeyClient(publicKey.getEncoded()).setMovementId(id)
-        .build();
+            UserServer.checkMovementRequest request = UserServer.checkMovementRequest.newBuilder()
+            .setPublicKeyClient(ByteString.copyFrom(publicKey.getEncoded())).setNumberMovement(id)
+            .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage)
+            .build();
 
-        UserServer.checkMovementResponse response = stub.checkMovement(request);
-		System.out.println(response);
+            UserServer.checkMovementResponse response = stub.checkMovement(request);
+            System.out.println(response);
+        }
+        catch (Exception e){
+            System.out.println(e);
+        }
     }
 
     public void check() throws Exception{
     
+        sequenceNumber++;
+        ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
+        messageBytes.write(clientPublicKeyBytes);
+        messageBytes.write(":".getBytes());
+        messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+        //messageBytes.write(encryptedTimeStamp.toByteArray());
+        String hashMessage = hashMessage(new String(messageBytes.toByteArray()));
+        ByteString encryptedHashMessage = ByteString.copyFrom(encrypt(privateKey, hashMessage.getBytes()));
+
 		UserServer.checkAccountRequest request = UserServer.checkAccountRequest.newBuilder()
-        //.setPublicKeyClient(publicKey.getEncoded()).setSequenceNumber().setHashMessage()
+        .setPublicKeyClient(ByteString.copyFrom(publicKey.getEncoded()))
+        .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage)
         .build();
 
 		UserServer.checkAccountResponse response = stub.checkAccount(request);
@@ -262,8 +319,18 @@ public class UserImpl {
 
     public void audit() throws Exception{
     
+        sequenceNumber++;
+        ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
+        messageBytes.write(clientPublicKeyBytes);
+        messageBytes.write(":".getBytes());
+        messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+        //messageBytes.write(encryptedTimeStamp.toByteArray());
+        String hashMessage = hashMessage(new String(messageBytes.toByteArray()));
+        ByteString encryptedHashMessage = ByteString.copyFrom(encrypt(privateKey, hashMessage.getBytes()));
+
 		UserServer.auditRequest request = UserServer.auditRequest.newBuilder()
-        //.setPublicKeyClient(publicKey.getEncoded()).setSequenceNumber().setHashMessage()
+        .setPublicKeyClient(ByteString.copyFrom(publicKey.getEncoded()))
+        .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage)
         .build();
 
 		UserServer.auditResponse response = stub.audit(request);
@@ -272,6 +339,4 @@ public class UserImpl {
         //proceeds to ask for the movements
     }
 
-
-    //audit
 }
