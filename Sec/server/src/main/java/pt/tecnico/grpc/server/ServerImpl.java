@@ -99,7 +99,7 @@ public class ServerImpl {
         return i;
     }
 
-    public float check_account_balance(ByteString key){
+    public float check_account_balance(ByteString clientPublicKey){
         //get balance of account
         float i = 0; //testing purpose
         return i;
