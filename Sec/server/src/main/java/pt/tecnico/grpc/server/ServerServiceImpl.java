@@ -40,9 +40,9 @@ public class ServerServiceImpl extends UserServerServiceGrpc.UserServerServiceIm
 		System.out.println(request);
 
 		try{
-			UserServer.openAccountResponse response = UserServer.openAccountResponse.newBuilder()
-					.setBalance(server.open_account(request.getPublicKeyClient(), 
-					request.getSequenceNumber(), request.getHashMessage())).build();
+			UserServer.openAccountResponse response = server.open_account(request.getPublicKeyClient(), 
+					request.getSequenceNumber(), request.getHashMessage());
+					
 			responseObserver.onNext(response);
 			responseObserver.onCompleted();
 		}

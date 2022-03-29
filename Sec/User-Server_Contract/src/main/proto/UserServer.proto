@@ -23,6 +23,8 @@ message openAccountRequest{
 
 message openAccountResponse{
 	float balance = 1; 
+	int32 sequenceNumber = 2;
+	bytes hashMessage = 3;
 }
 
 message sendAmountRequest{
@@ -35,6 +37,8 @@ message sendAmountRequest{
 
 message sendAmountResponse{
 	int32 transferId = 1;
+	int32 sequenceNumber = 2;
+	bytes hashMessage = 3; 
 }
 
 message checkAccountRequest{
@@ -46,6 +50,8 @@ message checkAccountRequest{
 message checkAccountResponse{
 	repeated int32 numberMovements = 1;
 	float balance = 2;
+	int32 sequenceNumber = 3;
+	bytes hashMessage = 4;
 }
 
 message checkMovementRequest{
@@ -61,6 +67,8 @@ message checkMovementResponse{
     bytes destAcc = 3;
     float amount = 4;
     string state = 5;
+	int32 sequenceNumber = 6;
+	bytes hashMessage = 7;
 }
 
 message receiveAmountRequest{
@@ -72,6 +80,8 @@ message receiveAmountRequest{
 
 message receiveAmountResponse{
 	bool done = 1;
+	int32 sequenceNumber = 2;
+	bytes hashMessage = 3;
 }
 
 message auditRequest{
@@ -83,6 +93,8 @@ message auditRequest{
 message auditResponse{
 	repeated int32 numberMovements = 1;
 	float balance = 2;
+	int32 sequenceNumber = 3;
+	bytes hashMessage = 4;
 }
 
 

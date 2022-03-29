@@ -30,48 +30,66 @@ public class ServerImpl {
     //private Movement[] movements; //dictionary or find function
 
 
-    public float open_account(ByteString clientPublicKey, int sequenceNumber, ByteString hashMessage) throws Exception{
+    public UserServer.openAccountResponse open_account(ByteString clientPublicKey, int sequenceNumber, ByteString hashMessage) throws Exception{
         
         //if(sequenceNumber != seqNumber + 1)
         //    throw new SequenceNumberException();
         //seqNumber++;
-        
-        ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
-        messageBytes.write(clientPublicKey.toByteArray());
-        messageBytes.write(":".getBytes());
-        messageBytes.write(String.valueOf(sequenceNumber).getBytes());
-        
-        String hashMessageString = decrypt(clientPublicKey.toByteArray(), hashMessage.toByteArray());
-        if(!verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
-            throw new MessageIntegrityException();
-        
-        
-        //see if key already exists in db (if it does throw user already existent exception) - Larissa
+        try{
+            ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
+            messageBytes.write(clientPublicKey.toByteArray());
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+            
+            String hashMessageString = decrypt(clientPublicKey.toByteArray(), hashMessage.toByteArray());
+            if(!verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
+                throw new MessageIntegrityException();
 
+        }catch(Exception ex){
+            System.err.println("Exception with message: " + ex.getMessage() + " and cause:" + ex.getCause());
+        }
+
+        
+        //see if key already exists in db (if it does throw user already existent exception (must also sign exceptions)) - Larissa
         Account acc = new Account(clientPublicKey, INITIAL_BALANCE);
-
         //save in database - Larissa
-        return acc.getBalance();
+
+        
+        ByteArrayOutputStream replyBytes = new ByteArrayOutputStream();
+        replyBytes.write(String.valueOf(INITIAL_BALANCE).getBytes());
+        replyBytes.write(":".getBytes());
+        replyBytes.write(String.valueOf(sequenceNumber).getBytes());
+        
+        String hashReply = hashString(new String(replyBytes.toByteArray()));
+        ByteString encryptedHashReply = ByteString.copyFrom(encrypt(getPrivateKey(), hashReply.getBytes()));
+        
+        UserServer.openAccountResponse response = UserServer.openAccountResponse.newBuilder()
+					.setBalance(acc.getBalance()).setSequenceNumber(sequenceNumber + 1)
+                    .setHashMessage(encryptedHashReply).build();
+        return response;
     }
 
 
     public int send_amount(ByteString sourcePublicKey, ByteString destinationPublicKey, float amount, int sequenceNumber, ByteString hashMessage) throws Exception{
 
         //Seq number verification --> sequence number exception
-
-        ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
-        messageBytes.write(sourcePublicKey.toByteArray());
-        messageBytes.write(":".getBytes());
-        messageBytes.write(destinationPublicKey.toByteArray());
-        messageBytes.write(":".getBytes());
-        messageBytes.write(String.valueOf(amount).getBytes());
-        messageBytes.write(":".getBytes());
-        messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+        try{
+            ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
+            messageBytes.write(sourcePublicKey.toByteArray());
+            messageBytes.write(":".getBytes());
+            messageBytes.write(destinationPublicKey.toByteArray());
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(amount).getBytes());
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+            
+            String hashMessageString = decrypt(sourcePublicKey.toByteArray(), hashMessage.toByteArray());
+            if(!verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
+                throw new MessageIntegrityException();
         
-        String hashMessageString = decrypt(sourcePublicKey.toByteArray(), hashMessage.toByteArray());
-        if(!verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
-            throw new MessageIntegrityException();
-        
+        }catch(Exception ex){
+            System.err.println("Exception with message: " + ex.getMessage() + " and cause:" + ex.getCause());
+        }
         //see if source and destination exist in DB --> Unknown user exception
         //see if has balance source.has_balance(amount) --> Not enough balance exception
         
@@ -84,16 +102,19 @@ public class ServerImpl {
     public List<Integer> check_account(ByteString clientPublicKey, int sequenceNumber, ByteString hashMessage) throws Exception{
         
         //Seq number verification --> sequence number exception
+        try{
+            ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
+            messageBytes.write(clientPublicKey.toByteArray());
+            messageBytes.write(String.valueOf(seqNumber).getBytes());
+            
+            String hashMessageString = decrypt(clientPublicKey.toByteArray(), hashMessage.toByteArray());
+            if(!verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
+                throw new MessageIntegrityException();
 
-        ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
-        messageBytes.write(clientPublicKey.toByteArray());
-        messageBytes.write(String.valueOf(seqNumber).getBytes());
-        
-        String hashMessageString = decrypt(clientPublicKey.toByteArray(), hashMessage.toByteArray());
-        if(!verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
-            throw new MessageIntegrityException();
-        
-        //get ids of movements to send
+        }catch(Exception ex){
+            System.err.println("Exception with message: " + ex.getMessage() + " and cause:" + ex.getCause());
+        }
+        //get ids of movements related to client to send
         List<Integer> i = new ArrayList<Integer>();    //Just for test
         i.add(20);
         return i;
@@ -125,6 +146,10 @@ public class ServerImpl {
         return i;
     }
 
+
+//------------------------------Obtain Keys-------------------------
+
+
     public static Key getPublicKey(String filename) throws Exception {
     
         byte[] keyBytes = Files.readAllBytes(Paths.get(filename));
@@ -134,9 +159,9 @@ public class ServerImpl {
         return kf.generatePublic(spec);
     }
     
-    public static Key getPrivateKey(String filename) throws Exception {
+    public static Key getPrivateKey() throws Exception {
     
-        byte[] keyBytes = Files.readAllBytes(Paths.get(filename));
+        byte[] keyBytes = Files.readAllBytes(Paths.get("src/main/java/pt/tecnico/grpc/server/rsaPrivateKey"));
     
         PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
         KeyFactory kf = KeyFactory.getInstance("RSA");
