@@ -68,6 +68,7 @@ public class ServerImpl {
     }
 
     public int[] check_account(ByteString key){
+        //get ids of movements to send
         int i[];    //declaring array
         i = new int[20];  // allocating memory to array
         return i;
@@ -86,9 +87,8 @@ public class ServerImpl {
         //update balance of key
         return true; //testing purpose
     }
-    public void audit(ByteString key){
-        
-        //get list of movement with key on origin or destination account and state = wtv
+    public int[] audit(ByteString key){
+        //get list of movement ids with key on origin or destination account and state = wtv
     }
 
     public static Key getPublicKey(String filename) throws Exception {

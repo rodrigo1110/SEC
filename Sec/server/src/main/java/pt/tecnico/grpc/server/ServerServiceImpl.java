@@ -87,7 +87,12 @@ public class ServerServiceImpl extends UserServerServiceGrpc.UserServerServiceIm
 		System.out.println(request);
 
 		try{
-			
+			Movement mov = server.getMovement(request.getNumberMovement());
+			UserServer.checkMovementResponse response = UserServer.checkMovementResponse.newBuilder()
+				.setId(mov.getId()).setOriginAcc(mov.getOriginAcc()).setDestAcc(mov.getDestAcc()).setAmount(mov.getAmount()).setState(mov.getStateString())
+				.build();
+			responseObserver.onNext(response);
+			responseObserver.onCompleted();
 		}
 		catch (Exception e){
 			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
@@ -114,7 +119,10 @@ public class ServerServiceImpl extends UserServerServiceGrpc.UserServerServiceIm
 		System.out.println(request);
 
 		try{
-			
+			UserServer.checkAccountResponse response = UserServer.checkAccountResponse.newBuilder()
+				.setNumberMovements(server.audit(request.getPublicKeyClient())).build(); //is wrong, needs to pass int[] to repeated
+			responseObserver.onNext(response);
+			responseObserver.onCompleted();
 		}
 		catch (Exception e){
 			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());

@@ -37,6 +37,33 @@ public class Movement{
         state=_state;
     }
 
+    public int getId(){
+        return id;
+    }
+    public ByteString getOriginAcc(){
+        return originAcc;
+    }
+    public ByteString getDestAcc(){
+        return destAcc;
+    }
+    public float getAmount(){
+        return amount;
+    }
+    public TransactionState getState(){
+        return state;
+    }
+    public String getStateString(){
+        if(state==TransactionState.APPROVED){
+            return "Approved";
+        }
+        else if(state==TransactionState.DENIED){
+            return "Denied";
+        }
+        else{ //(state==TransactionState.APPROVED){
+            return "Pending";
+        }
+    }
+
     public void approve(){
         state=TransactionState.APPROVED;
     }
