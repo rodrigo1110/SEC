@@ -133,6 +133,24 @@ public class UserImpl {
         return null;
     }
 
+    //-----------------------------Sign Functions------------------------------------
+
+    public static byte[] sign(byte[] content, PrivateKey privateKey) throws
+            NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        signature.initSign(privateKey);
+        signature.update(content);
+        return signature.sign();
+    }
+
+    public static boolean verifySignature(byte[] content, PublicKey publicKey, byte[] signature)
+            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+        Signature signAlgorithm = Signature.getInstance("SHA256withRSA");
+        signAlgorithm.initVerify(publicKey);
+        signAlgorithm.update(content);
+        return signAlgorithm.verify(signature);
+    }
+
 
     //------------------------------Hash Functions-----------------------------------
 
