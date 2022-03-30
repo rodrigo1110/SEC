@@ -47,9 +47,9 @@ public class User {
 
 				try{
 					switch (command[0]) {
-						/*case "signup":
+						case "signup":
 							user.signup();
-							break;*/
+							break;
 						case "open":
 							user.open();
 							break;

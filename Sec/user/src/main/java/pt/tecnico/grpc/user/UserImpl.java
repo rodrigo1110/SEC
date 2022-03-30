@@ -250,7 +250,7 @@ public class UserImpl {
 		UserServer.sendAmountRequest request = UserServer.sendAmountRequest.newBuilder()
         .setPublicKeySender(ByteString.copyFrom(publicKey.getEncoded())).setPublicKeySender(DestAcc).setAmount(amount)
         .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage)
-        .build(); //TODO setters
+        .build();
 
 		UserServer.sendAmountResponse response = stub.sendAmount(request);
 		System.out.println(response);
