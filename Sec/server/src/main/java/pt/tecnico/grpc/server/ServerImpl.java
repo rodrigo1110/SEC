@@ -24,7 +24,11 @@ public class ServerImpl {
     private ByteString publicKey;
     private boolean hasKeys = false;
     private int seqNumber = 0;
+    //public final ServerRepo serverRepo;
 
+    public ServerImpl(){
+        //this.serverRepo = new ServerRepo();
+    }
 
     //private Account[] accounts; //dictionary or find function
     //private Movement[] movements; //dictionary or find function
@@ -50,6 +54,7 @@ public class ServerImpl {
         }
 
         
+        //getBalance (if!=-1) -> já existe -> devolve erros
         //see if key already exists in db (if it does throw user already existent exception (must also sign exceptions)) - Larissa
         Account acc = new Account(clientPublicKey, INITIAL_BALANCE);
         //save in database - Larissa

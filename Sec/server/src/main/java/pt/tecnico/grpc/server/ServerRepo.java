@@ -87,23 +87,6 @@ public class ServerRepo {
         }
     }
 
-    public float getAccount(String pubKey) throws SQLException {
-        try {
-            String query = "SELECT * FROM account WHERE pubKey=?";
-            connection = this.newConnection();
-            statement = connection.prepareStatement(query);
-            statement.setString(1, pubKey);
-
-            resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                return resultSet.getFloat("balance");             
-            }
-            return -1;
-        } finally{
-            closeConnection();
-        }
-    }
-
     public void createAccount(String pubKey, Integer balance) throws SQLException {
         try {
             String query = "INSERT INTO account (pubKey, balance) VALUES (?, ?)";
@@ -116,4 +99,25 @@ public class ServerRepo {
             closeConnection();
         }
     }
+
+    public float getBalance(String pubKey) throws SQLException {
+        try {
+            String query = "SELECT balance FROM account WHERE pubKey=?";
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setString(1, pubKey);
+
+            resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getFloat("balance");             
+            }
+            else{
+                return -1; //serve para verificar se a conta ja existe
+            }
+        } finally{
+            closeConnection();
+        }
+    }
+
+    
 }

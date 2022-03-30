@@ -15,7 +15,7 @@ public class ServerServiceImpl extends UserServerServiceGrpc.UserServerServiceIm
 
 	//--------------------------user-Server communication implementation--------------------------
 	
-	private ServerMain listeningServer = new ServerMain();
+	//private ServerMain listeningServer = new ServerMain();
 	private ServerImpl server = new ServerImpl();
 	
 	
