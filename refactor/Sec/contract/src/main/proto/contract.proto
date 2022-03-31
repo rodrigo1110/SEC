@@ -1,0 +1,103 @@
+syntax = "proto3";
+package sec.bftb.grpc;
+
+message PingRequest {
+	// No arguments required
+}
+	
+message PingResponse {
+	string outputText = 1;
+}
+
+message openAccountRequest{
+	bytes publicKeyClient = 1;
+	int32 sequenceNumber = 2;
+	bytes hashMessage = 3;
+}
+
+message openAccountResponse{
+	float balance = 1; 
+	int32 sequenceNumber = 2;
+	bytes hashMessage = 3;
+}
+
+message sendAmountRequest{
+	bytes publicKeySender = 1;
+	bytes publicKeyReceiver = 2;
+	float amount = 3;
+	int32 sequenceNumber = 4;
+	bytes hashMessage = 5;
+}
+
+message sendAmountResponse{
+	int32 transferId = 1;
+	int32 sequenceNumber = 2;
+	bytes hashMessage = 3; 
+}
+
+message checkAccountRequest{
+	bytes publicKeyClient = 1;
+	int32 sequenceNumber = 2;
+	bytes hashMessage = 3;
+}
+
+message checkAccountResponse{
+	repeated int32 numberMovements = 1;
+	float balance = 2;
+	int32 sequenceNumber = 3;
+	bytes hashMessage = 4;
+}
+
+message checkMovementRequest{
+	bytes publicKeyClient = 1;
+	int32 numberMovement = 2;
+	int32 sequenceNumber = 3;
+	bytes hashMessage = 4;
+}
+
+message checkMovementResponse{
+	int32 id = 1;
+    bytes originAcc = 2;
+    bytes destAcc = 3;
+    float amount = 4;
+    string state = 5;
+	int32 sequenceNumber = 6;
+	bytes hashMessage = 7;
+}
+
+message receiveAmountRequest{
+	bytes publicKeyClient = 1;
+	int32 movementId = 2;
+	int32 sequenceNumber = 3;
+	bytes hashMessage = 4;
+}
+
+message receiveAmountResponse{
+	bool done = 1;
+	int32 sequenceNumber = 2;
+	bytes hashMessage = 3;
+}
+
+message auditRequest{
+	bytes publicKeyClient = 1;
+	int32 sequenceNumber = 2;
+	bytes hashMessage = 3;
+}
+
+message auditResponse{
+	repeated int32 numberMovements = 1;
+	float balance = 2;
+	int32 sequenceNumber = 3;
+	bytes hashMessage = 4;
+}
+
+
+service BFTBanking {
+	rpc Ping(PingRequest) returns (PingResponse);
+	rpc openAccount(openAccountRequest) returns (openAccountResponse);
+	rpc sendAmount(sendAmountRequest) returns (sendAmountResponse);
+	rpc checkAccount(checkAccountRequest) returns (checkAccountResponse);
+	rpc checkMovement(checkMovementRequest) returns (checkMovementResponse);
+	rpc receiveAmount(receiveAmountRequest) returns (receiveAmountResponse);
+	rpc audit(auditRequest) returns (auditResponse);
+}

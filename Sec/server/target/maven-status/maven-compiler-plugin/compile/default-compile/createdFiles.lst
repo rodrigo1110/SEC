@@ -1,0 +1,15 @@
+pt/tecnico/grpc/server/ServerRepo.class
+pt/tecnico/grpc/server/Movement.class
+pt/tecnico/grpc/server/BFTBKeyStore.class
+pt/tecnico/grpc/server/exceptions/MessageIntegrityException.class
+pt/tecnico/grpc/server/exceptions/SequenceNumberException.class
+pt/tecnico/grpc/server/exceptions/UnknownUserException.class
+pt/tecnico/grpc/server/ServerMain.class
+pt/tecnico/grpc/server/ServerServiceImpl.class
+pt/tecnico/grpc/server/Logger.class
+pt/tecnico/grpc/server/exceptions/NotEnoughBalanceException.class
+pt/tecnico/grpc/server/exceptions/NoPermissionException.class
+pt/tecnico/grpc/server/exceptions/FailedOperationException.class
+pt/tecnico/grpc/server/Account.class
+pt/tecnico/grpc/server/ServerImpl.class
+pt/tecnico/grpc/server/TransactionState.class
