@@ -53,17 +53,20 @@ public class User {
 						case "open":
 							user.open();
 							break;
-						case "send": //or send
+						case "send":
 							user.send(ByteString.copyFromUtf8(command[1]), Float.parseFloat(command[2]));
 							break;
-						case "check": //or send
+						case "check":
 							user.check();
 							break;
-						case "receive": //or send
+						case "receive":
 							user.receive(Integer.parseInt(command[1]));
 							break;
-						case "audit": //or send
+						case "audit":
 							user.audit();
+							break;
+						case "mov": //for debug
+							user.checkMovement(Integer.parseInt(command[1]));
 							break;
 						case "help":
 							System.out.printf("Avaliable operations:\n");
