@@ -32,12 +32,6 @@ public class Client {
         logger = new Logger("Client", "App");
     }
 
-
-    /*public PingResponse ping(PingRequest request) {
-        return stub.ping(request);
-    }*/
-
-
     public int generateNonce(int userID){
         int sequenceNumber;
         do{
@@ -118,7 +112,6 @@ public class Client {
         catch(Exception e){
             logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
         }
-		System.out.println(response);
     }
 
 
@@ -189,11 +182,12 @@ public class Client {
         
             List<Integer> nonce = new ArrayList<>(sequenceNumber);
             nonces.put(sourceID, nonce);
+
+            System.out.println("Transfer succesfully created with id: " + response.getTransferId());
         }
         catch(Exception e){
             logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
         }
-		System.out.println(response);
     }
 
 
@@ -262,7 +256,7 @@ public class Client {
 
             System.out.println("Pending movements: ");
             for(Movement mov : response.getPendingMovementsList()){
-                System.out.println("Movement " + mov.getMovementID() + ": Amount: " + mov.getAmount());
+                System.out.println("Movement " + mov.getMovementID() + ": " + mov.getAmount() + " (amount)");
                 
             }
             System.out.println("\nYour current balance: " + response.getBalance());
@@ -270,7 +264,6 @@ public class Client {
         catch(Exception e){
             logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
         }
-		System.out.println(response);
     }
 
 
@@ -337,12 +330,14 @@ public class Client {
         catch(Exception e){
             logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
         }
-		System.out.println(response);
     }
 
 
 
     //----------------------------Audit-----------------------------
+
+
+
     public void audit(String password, int userID){
         
         ByteArrayOutputStream messageBytes;
@@ -410,6 +405,6 @@ public class Client {
         catch(Exception e){
             logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
         }
-		System.out.println(response);
     }
+
 }
