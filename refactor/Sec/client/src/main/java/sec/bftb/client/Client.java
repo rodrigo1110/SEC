@@ -91,7 +91,7 @@ public class Client {
 
 		openAccountResponse response = stub.withDeadlineAfter(7000, TimeUnit.MILLISECONDS).openAccount(request);
         if(response.getSequenceNumber() != sequenceNumber + 1){
-            logger.log("Trudy detected. eliminate");
+            logger.log("Invalid sequence number. Possible replay attack detected.");
             return;
         }
         
@@ -104,7 +104,7 @@ public class Client {
             serverPublicKey = CryptographicFunctions.getServerPublicKey("../crypto/");
             String hashMessageString = CryptographicFunctions.decrypt(serverPublicKey.getEncoded(), response.getHashMessage().toByteArray()); 
             if(!CryptographicFunctions.verifyMessageHash(messageBytes.toByteArray(), hashMessageString)){
-                logger.log("fake server detected. eliminate");
+                logger.log("Message reply integrity compromissed.");
                 return;
             }
         
@@ -166,7 +166,7 @@ public class Client {
 
 		sendAmountResponse response = stub.withDeadlineAfter(7000, TimeUnit.MILLISECONDS).sendAmount(request);
         if(response.getSequenceNumber() != sequenceNumber + 1){
-            logger.log("Trudy detected. eliminate");
+            logger.log("Invalid sequence number. Possible replay attack detected.");
             return;
         }
 
@@ -180,7 +180,7 @@ public class Client {
             serverPublicKey = CryptographicFunctions.getServerPublicKey("../crypto/");
             String hashMessageString = CryptographicFunctions.decrypt(serverPublicKey.getEncoded(), response.getHashMessage().toByteArray()); 
             if(!CryptographicFunctions.verifyMessageHash(messageBytes.toByteArray(), hashMessageString)){
-                logger.log("fake server detected. eliminate");
+                logger.log("Message reply integrity compromissed.");
                 return;
             }
         
@@ -231,7 +231,7 @@ public class Client {
 
 		checkAccountResponse response = stub.withDeadlineAfter(7000, TimeUnit.MILLISECONDS).checkAccount(request);
         if(response.getSequenceNumber() != sequenceNumber + 1){
-            logger.log("Trudy detected. eliminate");
+            logger.log("Invalid sequence number. Possible replay attack detected.");
             return;
         }
 
@@ -247,7 +247,7 @@ public class Client {
             serverPublicKey = CryptographicFunctions.getServerPublicKey("../crypto/");
             String hashMessageString = CryptographicFunctions.decrypt(serverPublicKey.getEncoded(), response.getHashMessage().toByteArray()); 
             if(!CryptographicFunctions.verifyMessageHash(messageBytes.toByteArray(), hashMessageString)){
-                logger.log("fake server detected. eliminate");
+                logger.log("Message reply integrity compromissed.");
                 return;
             }
         
@@ -269,7 +269,7 @@ public class Client {
 
 
     public void receive(int userID, int transferID){
-        /*ByteArrayOutputStream messageBytes;
+        ByteArrayOutputStream messageBytes;
         String hashMessage;
         int sequenceNumber;
         ByteString encryptedHashMessage;
@@ -304,39 +304,31 @@ public class Client {
 
 		receiveAmountResponse response = stub.withDeadlineAfter(7000, TimeUnit.MILLISECONDS).receiveAmount(request);
         if(response.getSequenceNumber() != sequenceNumber + 1){
-            logger.log("Trudy detected. eliminate");
+            logger.log("Invalid sequence number. Possible replay attack detected.");
             return;
         }
 
         
         try{
             messageBytes = new ByteArrayOutputStream();
-            messageBytes.write(response.getPendingMovementsList().toString().getBytes());
-            messageBytes.write(":".getBytes());
-            messageBytes.write(String.valueOf(response.getBalance()).getBytes());
-            messageBytes.write(":".getBytes());
             messageBytes.write(String.valueOf(response.getSequenceNumber()).getBytes());
             
             serverPublicKey = CryptographicFunctions.getServerPublicKey("../crypto/");
             String hashMessageString = CryptographicFunctions.decrypt(serverPublicKey.getEncoded(), response.getHashMessage().toByteArray()); 
             if(!CryptographicFunctions.verifyMessageHash(messageBytes.toByteArray(), hashMessageString)){
-                logger.log("fake server detected. eliminate");
+                logger.log("Message reply integrity compromissed.");
                 return;
             }
         
             List<Integer> nonce = new ArrayList<>(sequenceNumber);
             nonces.put(userID, nonce);
 
-            System.out.println("Pending movements: ");
-            for(int transferID : response.getPendingMovementsList()){
-                System.out.println(transferID + ", ");
-            }
-            System.out.println("\nCurrent balance: " + response.getBalance());
+            System.out.println("Transfer accepted, amount received.");
         }
         catch(Exception e){
             logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
         }
-		System.out.println(response);*/
+		System.out.println(response);
     }
 
 

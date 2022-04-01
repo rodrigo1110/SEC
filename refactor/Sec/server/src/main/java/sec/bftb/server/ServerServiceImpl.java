@@ -72,7 +72,7 @@ public class ServerServiceImpl extends BFTBankingGrpc.BFTBankingImplBase {
 		}
 	}
 
-/*
+
 	@Override
 	public void receiveAmount(receiveAmountRequest request, StreamObserver<receiveAmountResponse> responseObserver) {
 		try{
@@ -86,6 +86,7 @@ public class ServerServiceImpl extends BFTBankingGrpc.BFTBankingImplBase {
 		}
 	}
 
+	/*
 	@Override
 	public void audit(auditRequest request, StreamObserver<auditResponse> responseObserver) {
 		try{
