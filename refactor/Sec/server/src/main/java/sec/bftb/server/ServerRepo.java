@@ -96,7 +96,7 @@ public class ServerRepo {
 
     public void addTransfer(String srcPubKey, String destPubKey, Float amount, int movementId) throws SQLException {
         try {
-            String query = "INSERT INTO account (movementId, amount, sourceAccount, destinationAccount) VALUES (?, ?, ?, ?)";
+            String query = "INSERT INTO movement (movementId, amount, sourceAccount, destinationAccount) VALUES (?, ?, ?, ?)";
             connection = this.newConnection();
             statement = connection.prepareStatement(query);
             statement.setInt(1, movementId);

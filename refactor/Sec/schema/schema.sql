@@ -10,6 +10,6 @@ CREATE TABLE movement
 (
     movementId         INTEGER NOT NULL PRIMARY KEY,
     amount             REAL NOT NULL,
-    sourceAccount      INTEGER NOT NULL,
-    destinationAccount INTEGER NOT NULL
+    sourceAccount      VARCHAR(5000) NOT NULL,
+    destinationAccount VARCHAR(5000) NOT NULL
 );
