@@ -73,10 +73,9 @@ public class Client {
 
 		openAccountRequest request = openAccountRequest.newBuilder()
         .setPublicKeyClient(ByteString.copyFrom(publicKeyBytes))
-        .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage).build();     // TO DO fix sequence number
+        .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage).build();     
 
 		openAccountResponse response = stub.withDeadlineAfter(7000, TimeUnit.MILLISECONDS).openAccount(request);
-
         if(response.getSequenceNumber() != sequenceNumber + 1){
             logger.log("Trudy detected. eliminate");
             return;
@@ -95,12 +94,7 @@ public class Client {
                 return;
             }
         
-        }catch(Exception e){
-            logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
-            return;
-        }
-
-        try{
+       
             int localUserID = CryptographicFunctions.saveKeyPair(pair); 
             
             List<Integer> nonce = new ArrayList<>(sequenceNumber);
@@ -111,11 +105,84 @@ public class Client {
         catch(Exception e){
             logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
         }
-
-        
 		System.out.println(response);
     }
 
+
+
+    public void send(int sourceID, int destID, float amount) throws Exception{
+        ByteArrayOutputStream messageBytes;
+        String hashMessage;
+        int sequenceNumber;
+        ByteString encryptedHashMessage;
+        byte[] sourcePublicKeyBytes, destPublicKeyBytes;
+        Key privateKey;
+
+        if(nonces.get(sourceID) != null){
+            do{
+                sequenceNumber = new Random().nextInt(10000);
+            }while(!nonces.get(sourceID).contains(sequenceNumber));
+        }
+        else
+            sequenceNumber = new Random().nextInt(10000);
+        
+        logger.log(String.valueOf(sourceID) + String.valueOf(amount));
+        try{
+            privateKey = CryptographicFunctions.getClientPrivateKey(sourceID);
+            sourcePublicKeyBytes = CryptographicFunctions.getClientPublicKey(sourceID).getEncoded();
+            destPublicKeyBytes = CryptographicFunctions.getClientPublicKey(destID).getEncoded();
+
+            messageBytes = new ByteArrayOutputStream();
+            messageBytes.write(sourcePublicKeyBytes);
+            messageBytes.write(":".getBytes());
+            messageBytes.write(destPublicKeyBytes);
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(amount).getBytes());
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+            
+            hashMessage = CryptographicFunctions.hashString(new String(messageBytes.toByteArray()));
+            encryptedHashMessage = ByteString.copyFrom(CryptographicFunctions
+            .encrypt(privateKey, hashMessage.getBytes()));
+        }
+        catch (Exception e){
+            logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
+            return;
+        }
+
+		sendAmountRequest request = sendAmountRequest.newBuilder().setPublicKeySender(ByteString.copyFrom(sourcePublicKeyBytes))
+        .setPublicKeyReceiver(ByteString.copyFrom(destPublicKeyBytes)).setAmount(amount)
+        .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage).build();   
+
+		sendAmountResponse response = stub.withDeadlineAfter(7000, TimeUnit.MILLISECONDS).sendAmount(request);
+        if(response.getSequenceNumber() != sequenceNumber + 1){
+            logger.log("Trudy detected. eliminate");
+            return;
+        }
+        
+        try{
+            messageBytes = new ByteArrayOutputStream();
+            messageBytes.write(String.valueOf(response.getTransferId()).getBytes());
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(response.getSequenceNumber()).getBytes());
+            
+            serverPublicKey = CryptographicFunctions.getServerPublicKey("../crypto/");
+            String hashMessageString = CryptographicFunctions.decrypt(serverPublicKey.getEncoded(), response.getHashMessage().toByteArray()); 
+            if(!CryptographicFunctions.verifyMessageHash(messageBytes.toByteArray(), hashMessageString)){
+                logger.log("fake server detected. eliminate");
+                return;
+            }
+        
+       
+            List<Integer> nonce = new ArrayList<>(sequenceNumber);
+            //if(!nonces.get(localUserID).contains(nonce))
+            nonces.put(sourceID, nonce);
+        }
+        catch(Exception e){
+            logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
+        }
+		System.out.println(response);
+    }
 
 
     public void channelEnd() {

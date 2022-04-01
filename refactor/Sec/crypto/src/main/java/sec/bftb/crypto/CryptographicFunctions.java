@@ -53,9 +53,9 @@ public class CryptographicFunctions{
 
 
     
-    public static Key getClientPublicKey(String filename) throws Exception {
+    public static Key getClientPublicKey(int userID) throws Exception {
     
-        byte[] keyBytes = Files.readAllBytes(Paths.get(filename));
+        byte[] keyBytes = Files.readAllBytes(Paths.get("../crypto/keys/publicKeys/" + userID + "-PublicKey"));
     
         X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
         KeyFactory kf = KeyFactory.getInstance("RSA");
@@ -73,7 +73,7 @@ public class CryptographicFunctions{
     
     public static Key getClientPrivateKey(int userID) throws Exception {
     
-        byte[] keyBytes = Files.readAllBytes(Paths.get("keys/privateKeys/" + userID + "-PrivateKey"));
+        byte[] keyBytes = Files.readAllBytes(Paths.get("../crypto/keys/privateKeys/" + userID + "-PrivateKey"));
     
         PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
         KeyFactory kf = KeyFactory.getInstance("RSA");

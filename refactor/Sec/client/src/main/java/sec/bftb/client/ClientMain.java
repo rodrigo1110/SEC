@@ -45,10 +45,11 @@ public class ClientMain {
 						case "open":
 							user.open();
 							break;
-						/*case "send":
-							user.send(ByteString.copyFromUtf8(command[1]), Float.parseFloat(command[2]));
+						case "send":
+							//user.send(10001,10002,40);
+							user.send(Integer.parseInt(command[1]), Integer.parseInt(command[2]),Float.parseFloat(command[3]));
 							break;
-						case "check":
+						/*case "check":
 							user.check();
 							break;
 						case "receive":
@@ -84,7 +85,7 @@ public class ClientMain {
 					else
 						System.out.println(e.getStatus().getDescription());
 				}catch(Exception ex){
-					System.out.println("Exception with message: " + ex.getMessage() + " and cause:" + ex.getCause());
+					System.out.println("Exceeeption with message: " + ex.getMessage() + " and cause:" + ex.getCause());
 				} 	
 			}
 			myObj.close();

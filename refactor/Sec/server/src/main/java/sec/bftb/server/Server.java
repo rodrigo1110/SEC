@@ -76,10 +76,8 @@ public class Server {
             replyBytes.write(String.valueOf(sequenceNumber + 1).getBytes());
             
             String hashReply = CryptographicFunctions.hashString(new String(replyBytes.toByteArray()));
-            System.out.println("here");
             ByteString encryptedHashReply = ByteString.copyFrom(CryptographicFunctions
             .encrypt(CryptographicFunctions.getServerPrivateKey("../crypto/"), hashReply.getBytes()));
-            System.out.println("here2");
         
         
             List<Integer> nonce = new ArrayList<>(sequenceNumber);
@@ -95,5 +93,59 @@ public class Server {
             throw new GeneralSecurityException(e); 
         }
     }
+    
+
+
+    public sendAmountResponse send_amount(ByteString sourcePublicKey, ByteString destinationPublicKey, float amount, int sequenceNumber, ByteString hashMessage) throws Exception{
+
+        List <Integer> values = nonces.get(new String(sourcePublicKey.toByteArray()));
+        if(values != null && values.contains(sequenceNumber))
+            throw new ServerException(ErrorMessage.SEQUENCE_NUMBER);
+
+        try{
+            ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
+            messageBytes.write(sourcePublicKey.toByteArray());
+            messageBytes.write(":".getBytes());
+            messageBytes.write(destinationPublicKey.toByteArray());
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(amount).getBytes());
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+            
+            String hashMessageString = CryptographicFunctions.decrypt(sourcePublicKey.toByteArray(), hashMessage.toByteArray());
+            if(!CryptographicFunctions.verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
+                throw new ServerException(ErrorMessage.MESSAGE_INTEGRITY);
+        
+            //see if source and destination exist in DB --> Unknown user exception
+            //see if has balance source.has_balance(amount) --> Not enough balance exception
+            //create transfer and return transfer id
+
+            ByteArrayOutputStream replyBytes = new ByteArrayOutputStream();
+            replyBytes.write(String.valueOf(7).getBytes()); //TODO replace 7 for actual transfer id
+            replyBytes.write(":".getBytes());
+            replyBytes.write(String.valueOf(sequenceNumber + 1).getBytes());
+            
+            String hashReply = CryptographicFunctions.hashString(new String(replyBytes.toByteArray()));
+            ByteString encryptedHashReply = ByteString.copyFrom(CryptographicFunctions
+            .encrypt(CryptographicFunctions.getServerPrivateKey("../crypto/"), hashReply.getBytes()));
+        
+        
+            List<Integer> nonce = new ArrayList<>(sequenceNumber);
+            nonces.put(new String(sourcePublicKey.toByteArray()), nonce);
+
+            sendAmountResponse response = sendAmountResponse.newBuilder()
+                        .setTransferId(7).setSequenceNumber(sequenceNumber + 1)  //TODO replace 7 for actual transfer id
+                        .setHashMessage(encryptedHashReply).build();
+            return response;
+          
+        
+        }catch(GeneralSecurityException e){
+            logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
+            throw new GeneralSecurityException(e); 
+        }
+    }
+
+    
+
 	
 }
