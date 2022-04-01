@@ -262,8 +262,8 @@ public class Client {
 
             System.out.println("Pending movements: ");
             for(Movement mov : response.getPendingMovementsList()){
-                System.out.println("Movement " + mov.getMovementID() + ":");
-                System.out.println("Sender: " + mov.getSenderUserID() + ", Receiver: " + mov.getReceiverUserID() + ", Amount: " + mov.getAmount());
+                System.out.println("Movement " + mov.getMovementID() + ": Amount: " + mov.getAmount());
+                
             }
             System.out.println("\nYour current balance: " + response.getBalance());
         }
@@ -404,7 +404,7 @@ public class Client {
             System.out.println("Accepted movements: ");
             for(Movement mov : response.getConfirmedMovementsList()){
                 System.out.println("Movement " + mov.getMovementID() + ":");
-                System.out.println("Sender: " + mov.getSenderUserID() + ", Receiver: " + mov.getReceiverUserID() + ", Amount: " + mov.getAmount());
+                System.out.println("Status: " + mov.getStatus() + ", Amount: " + mov.getAmount());
             }
         }
         catch(Exception e){

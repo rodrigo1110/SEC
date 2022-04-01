@@ -81,7 +81,6 @@ public class ClientMain {
 						
 						case "help":
 							System.out.printf("Avaliable operations:\n");
-							//System.out.printf(" - signup -> create credentials (necessary only once) \n");
 							System.out.printf(" - open (1) -> open account \n");
 							System.out.printf(" - send (1) (2) (3) (4) -> send (4) to user (3) from user (2) \n");
 							System.out.printf(" - check (1) (2)-> check balance and pending movements of account (2) \n");

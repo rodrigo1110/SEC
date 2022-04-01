@@ -2,6 +2,9 @@ package sec.bftb.server;
 
 import org.apache.ibatis.jdbc.ScriptRunner;
 
+import sec.bftb.grpc.Contract.*;
+import sec.bftb.grpc.BFTBankingGrpc;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -94,13 +97,14 @@ public class ServerRepo {
         }
     }
 
-    /*public List<User> getMovments(String pubKey) throws SQLException{
+    public List<Movement> getMovements(String pubKey, String flag) throws SQLException{
         try{ 
-            String query = "SELECT movementId,amount,sourceAccount,destinationAccount,trasferStatus FROM remotedocs_permissions WHERE destinationAccount = ? and transferStatus = 'PENDING'";
-            ArrayList<User> listOfUsers = new ArrayList<>();
+            String query = "SELECT movementId,amount,sourceAccount,destinationAccount,trasferStatus FROM movements WHERE destinationAccount = ? and transferStatus = ?";
+            ArrayList<Movement> movements = new ArrayList<>();
             connection = this.newConnection();
             statement = connection.prepareStatement(query);
             statement.setString(1, pubKey);
+            statement.setString(2,flag);
 
             resultSet = statement.executeQuery();
             while(resultSet.next()){
@@ -108,16 +112,41 @@ public class ServerRepo {
                 String destination = resultSet.getString("destinationAccount");
                 String status = resultSet.getString("trasferStatus");
                 int transferId = resultSet.getInt("movementId");      
-                int amount = resultSet.getInt("amount");
+                float amount = resultSet.getFloat("amount");
 
-                listOfUsers.add(new User(username, permission));
+                Movement mov = Movement.newBuilder().setMovementID(transferId).setAmount(amount).setStatus(status).build();
+
+                movements.add(mov);
             }
 
-            return listOfUsers;
+            if(flag!="PENDING"){
+                String query2 = "SELECT movementId,amount,sourceAccount,destinationAccount,trasferStatus FROM movements WHERE destinationAccount = ? and transferStatus = ?";
+                connection = this.newConnection();
+                statement = connection.prepareStatement(query);
+                statement.setString(1, pubKey);
+                statement.setString(2,"NOT_APPROVED");
+
+                resultSet = statement.executeQuery();
+                while(resultSet.next()){
+                    String source = resultSet.getString("sourceAccount");
+                    String destination = resultSet.getString("destinationAccount");
+                    String status = resultSet.getString("trasferStatus");
+                    int transferId = resultSet.getInt("movementId");      
+                    float amount = resultSet.getFloat("amount");
+
+                    Movement mov = Movement.newBuilder().setMovementID(transferId).setAmount(amount).setStatus(status).build();
+
+                    movements.add(mov);
+                }
+            }
+
+
+            return movements;
         } finally {
             closeConnection();
         }
-    }*/
+    }
+
 
     public void addTransfer(String srcPubKey, String destPubKey, Float amount, int movementId, String trasferStatus) throws SQLException {
         try {

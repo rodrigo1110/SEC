@@ -70,7 +70,7 @@ public class CryptographicFunctions{
             KeyFactory kf = KeyFactory.getInstance("RSA");
             return kf.generatePublic(spec);
         }catch(IOException e){
-            throw new Exception("Client's " + userID + " public key not found");
+            throw new Exception("Wrong userID or password.");
         }
     }
 
@@ -94,7 +94,7 @@ public class CryptographicFunctions{
             KeyFactory kf = KeyFactory.getInstance("RSA");
             return kf.generatePrivate(spec);
         }catch(IOException e){
-            throw new Exception("Client's " + password + " private key not found");
+            throw new Exception("Wrong userID or password.");
         }
     }
 

@@ -4,9 +4,8 @@ package sec.bftb.grpc;
 
 message Movement {
 	int32 movementID = 1;
-	int32 senderUserID = 2;
-	int32 receiverUserID = 3;
-	float amount = 4;
+	float amount = 2;
+	string status = 3;
 }
 
 message PingRequest {

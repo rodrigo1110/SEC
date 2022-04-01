@@ -187,11 +187,11 @@ public class Server {
                 throw new ServerException(ErrorMessage.NO_SUCH_USER);
             
             //TODO query to obtain transfer ids (and respective users and money involved) that are pending acceptance --> List of movements
+            List<Movement> movements = this.serverRepo.getMovements(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()), "PENDING");
 
-
-            List<Movement> changeLater = new ArrayList<>(); // substitute later for Movement list
+            //List<Movement> changeLater = new ArrayList<>(); // substitute later for Movement list
             ByteArrayOutputStream replyBytes = new ByteArrayOutputStream();
-            replyBytes.write(changeLater.toString().getBytes());
+            replyBytes.write(movements.toString().getBytes());
             replyBytes.write(":".getBytes());
             replyBytes.write(String.valueOf(balance).getBytes());
             replyBytes.write(":".getBytes());
@@ -205,7 +205,7 @@ public class Server {
             List<Integer> nonce = new ArrayList<>(sequenceNumber);
             nonces.put(new String(clientPublicKey.toByteArray()), nonce);
 
-            checkAccountResponse response = checkAccountResponse.newBuilder().addAllPendingMovements(changeLater)
+            checkAccountResponse response = checkAccountResponse.newBuilder().addAllPendingMovements(movements)
                         .setBalance(balance).setSequenceNumber(sequenceNumber + 1)
                         .setHashMessage(encryptedHashReply).build();
             return response;
@@ -295,12 +295,13 @@ public class Server {
             float balance = this.serverRepo.getBalance(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()));
             if (balance == -1)
                 throw new ServerException(ErrorMessage.USER_ALREADY_EXISTS);
-            
-            //TODO query to obtain history of movements that have been accepted by the user
 
-            List<Movement> changeLater = new ArrayList<>(); // substitute later for transfer ids list
+            List<Movement> movements = this.serverRepo.getMovements(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()), "APPROVED");
+            
+            //TODO query to obtain history of movements that have been accepted (or not) by the user
+
             ByteArrayOutputStream replyBytes = new ByteArrayOutputStream();
-            replyBytes.write(changeLater.toString().getBytes());
+            replyBytes.write(movements.toString().getBytes());
             replyBytes.write(":".getBytes());
             replyBytes.write(String.valueOf(sequenceNumber + 1).getBytes());
             
@@ -312,7 +313,7 @@ public class Server {
             List<Integer> nonce = new ArrayList<>(sequenceNumber);
             nonces.put(new String(clientPublicKey.toByteArray()), nonce);
 
-            auditResponse response = auditResponse.newBuilder().addAllConfirmedMovements(changeLater)
+            auditResponse response = auditResponse.newBuilder().addAllConfirmedMovements(movements)
                         .setSequenceNumber(sequenceNumber + 1).setHashMessage(encryptedHashReply).build();
             return response;
         }  
