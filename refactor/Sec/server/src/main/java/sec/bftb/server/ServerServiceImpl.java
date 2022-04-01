@@ -59,7 +59,7 @@ public class ServerServiceImpl extends BFTBankingGrpc.BFTBankingImplBase {
 	}
 
 
-	/*@Override
+	@Override
 	public void checkAccount(checkAccountRequest request, StreamObserver<checkAccountResponse> responseObserver) {
 		try{
 			checkAccountResponse response = server.check_account(request.getPublicKeyClient(),
@@ -72,7 +72,7 @@ public class ServerServiceImpl extends BFTBankingGrpc.BFTBankingImplBase {
 		}
 	}
 
-
+/*
 	@Override
 	public void receiveAmount(receiveAmountRequest request, StreamObserver<receiveAmountResponse> responseObserver) {
 		try{

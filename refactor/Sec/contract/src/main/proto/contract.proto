@@ -43,7 +43,7 @@ message checkAccountRequest{
 }
 
 message checkAccountResponse{
-	repeated int32 numberMovements = 1;
+	repeated int32 pendingMovements = 1;
 	float balance = 2;
 	int32 sequenceNumber = 3;
 	bytes hashMessage = 4;

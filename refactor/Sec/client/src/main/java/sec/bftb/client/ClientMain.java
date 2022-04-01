@@ -6,10 +6,14 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import sec.bftb.grpc.Contract.*;
 
+import sec.bftb.client.Logger;
+
 public class ClientMain {
 	public static void main(String[] args) throws Exception {
 		System.out.println(ClientMain.class.getSimpleName());
 		Scanner myObj = new Scanner(System.in);
+
+		Logger logger = new Logger("Client", "Main");
 
 		// receive and print arguments
 		System.out.printf("Received %d arguments%n", args.length);
@@ -18,7 +22,7 @@ public class ClientMain {
 		}
 
 		if (args.length != 2) {
-			System.err.println("Invalid Number of Arguments");
+			logger.log("Invalid Number of Arguments. Must be two: host port");
 			myObj.close();
 			return;
 		} 
@@ -46,16 +50,15 @@ public class ClientMain {
 							user.open();
 							break;
 						case "send":
-							//user.send(10001,10002,40);
 							user.send(Integer.parseInt(command[1]), Integer.parseInt(command[2]),Float.parseFloat(command[3]));
 							break;
-						/*case "check":
-							user.check();
+						case "check":
+							user.check(Integer.parseInt(command[1]));
 							break;
 						case "receive":
-							user.receive(Integer.parseInt(command[1]));
+							user.receive(Integer.parseInt(command[1]), Integer.parseInt(command[2]));
 							break;
-						case "audit":
+						/*case "audit":
 							user.audit();
 							break;
 						case "mov": //for debug
@@ -79,21 +82,20 @@ public class ClientMain {
 					}
 				}catch(StatusRuntimeException e){
 					if((e.getStatus().getCode().equals(Status.UNAVAILABLE.getCode()))){//server down
-						System.out.println("Server unavailable.");
+						logger.log("Server unavailable.");
 						System.exit(0);
 					}
 					else
-						System.out.println(e.getStatus().getDescription());
+						logger.log(e.getStatus().getDescription());
 				}catch(Exception ex){
-					System.out.println("Exceeeption with message: " + ex.getMessage() + " and cause:" + ex.getCause());
+					logger.log("Exceeeption with message: " + ex.getMessage() + " and cause:" + ex.getCause());
 				} 	
 			}
 			myObj.close();
 			user.getChannel().shutdownNow();
 
-		}catch(Exception e){
-			System.out.println("Server's public key not found");
-			System.exit(0);
+		}catch(Exception ex){
+			logger.log("Exceeption with message: " + ex.getMessage() + " and cause:" + ex.getCause());
 		}
 	}
 }

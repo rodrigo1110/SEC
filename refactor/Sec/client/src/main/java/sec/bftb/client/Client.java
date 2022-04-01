@@ -42,6 +42,20 @@ public class Client {
         return stub.ping(request);
     }*/
 
+
+    public int generateNonce(int userID){
+        int sequenceNumber;
+        do{
+            sequenceNumber = new Random().nextInt(10000);
+        }while(nonces.get(userID) != null && nonces.get(userID).contains(sequenceNumber));
+        return sequenceNumber;
+    }
+
+
+
+
+    //-----------------------------------Open account----------------------------
+
     public void open() throws Exception{
         
         ByteArrayOutputStream messageBytes;
@@ -94,11 +108,9 @@ public class Client {
                 return;
             }
         
-       
             int localUserID = CryptographicFunctions.saveKeyPair(pair); 
             
             List<Integer> nonce = new ArrayList<>(sequenceNumber);
-            //if(!nonces.get(localUserID).contains(nonce))
             nonces.put(localUserID, nonce);
             System.out.println("Your local user id: " + localUserID);
         }
@@ -109,8 +121,12 @@ public class Client {
     }
 
 
+    //--------------------------------------Send amount--------------------------------------
+
+
 
     public void send(int sourceID, int destID, float amount) throws Exception{
+        
         ByteArrayOutputStream messageBytes;
         String hashMessage;
         int sequenceNumber;
@@ -118,15 +134,8 @@ public class Client {
         byte[] sourcePublicKeyBytes, destPublicKeyBytes;
         Key privateKey;
 
-        if(nonces.get(sourceID) != null){
-            do{
-                sequenceNumber = new Random().nextInt(10000);
-            }while(!nonces.get(sourceID).contains(sequenceNumber));
-        }
-        else
-            sequenceNumber = new Random().nextInt(10000);
-        
-        logger.log(String.valueOf(sourceID) + String.valueOf(amount));
+
+        sequenceNumber = generateNonce(sourceID);
         try{
             privateKey = CryptographicFunctions.getClientPrivateKey(sourceID);
             sourcePublicKeyBytes = CryptographicFunctions.getClientPublicKey(sourceID).getEncoded();
@@ -150,7 +159,8 @@ public class Client {
             return;
         }
 
-		sendAmountRequest request = sendAmountRequest.newBuilder().setPublicKeySender(ByteString.copyFrom(sourcePublicKeyBytes))
+		
+        sendAmountRequest request = sendAmountRequest.newBuilder().setPublicKeySender(ByteString.copyFrom(sourcePublicKeyBytes))
         .setPublicKeyReceiver(ByteString.copyFrom(destPublicKeyBytes)).setAmount(amount)
         .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage).build();   
 
@@ -159,6 +169,7 @@ public class Client {
             logger.log("Trudy detected. eliminate");
             return;
         }
+
         
         try{
             messageBytes = new ByteArrayOutputStream();
@@ -173,9 +184,7 @@ public class Client {
                 return;
             }
         
-       
             List<Integer> nonce = new ArrayList<>(sequenceNumber);
-            //if(!nonces.get(localUserID).contains(nonce))
             nonces.put(sourceID, nonce);
         }
         catch(Exception e){
@@ -183,6 +192,156 @@ public class Client {
         }
 		System.out.println(response);
     }
+
+
+    //---------------------------------Check account--------------------------------
+
+    public void check(int userID){
+        
+        ByteArrayOutputStream messageBytes;
+        String hashMessage;
+        int sequenceNumber;
+        ByteString encryptedHashMessage;
+        byte[] publicKeyBytes;
+        Key privateKey;
+
+
+        sequenceNumber = generateNonce(userID);
+        try{
+            privateKey = CryptographicFunctions.getClientPrivateKey(userID);
+            publicKeyBytes = CryptographicFunctions.getClientPublicKey(userID).getEncoded();
+        
+            messageBytes = new ByteArrayOutputStream();
+            messageBytes.write(publicKeyBytes);
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+            
+            hashMessage = CryptographicFunctions.hashString(new String(messageBytes.toByteArray()));
+            encryptedHashMessage = ByteString.copyFrom(CryptographicFunctions
+            .encrypt(privateKey, hashMessage.getBytes()));
+        }
+        catch (Exception e){
+            logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
+            return;
+        }
+
+		
+        checkAccountRequest request = checkAccountRequest.newBuilder().setPublicKeyClient(ByteString.copyFrom(publicKeyBytes))
+        .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage).build();   
+
+		checkAccountResponse response = stub.withDeadlineAfter(7000, TimeUnit.MILLISECONDS).checkAccount(request);
+        if(response.getSequenceNumber() != sequenceNumber + 1){
+            logger.log("Trudy detected. eliminate");
+            return;
+        }
+
+        
+        try{
+            messageBytes = new ByteArrayOutputStream();
+            messageBytes.write(response.getPendingMovementsList().toString().getBytes());
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(response.getBalance()).getBytes());
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(response.getSequenceNumber()).getBytes());
+            
+            serverPublicKey = CryptographicFunctions.getServerPublicKey("../crypto/");
+            String hashMessageString = CryptographicFunctions.decrypt(serverPublicKey.getEncoded(), response.getHashMessage().toByteArray()); 
+            if(!CryptographicFunctions.verifyMessageHash(messageBytes.toByteArray(), hashMessageString)){
+                logger.log("fake server detected. eliminate");
+                return;
+            }
+        
+            List<Integer> nonce = new ArrayList<>(sequenceNumber);
+            nonces.put(userID, nonce);
+
+            System.out.println("Pending movements: ");
+            for(int transferID : response.getPendingMovementsList()){
+                System.out.println(transferID + ", ");
+            }
+            System.out.println("\nCurrent balance: " + response.getBalance());
+        }
+        catch(Exception e){
+            logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
+        }
+		System.out.println(response);
+    }
+
+
+
+    public void receive(int userID, int transferID){
+        /*ByteArrayOutputStream messageBytes;
+        String hashMessage;
+        int sequenceNumber;
+        ByteString encryptedHashMessage;
+        byte[] publicKeyBytes;
+        Key privateKey;
+
+
+        sequenceNumber = generateNonce(userID);
+        try{
+            privateKey = CryptographicFunctions.getClientPrivateKey(userID);
+            publicKeyBytes = CryptographicFunctions.getClientPublicKey(userID).getEncoded();
+        
+            messageBytes = new ByteArrayOutputStream();
+            messageBytes.write(publicKeyBytes);
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(transferID).getBytes());
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+            
+            hashMessage = CryptographicFunctions.hashString(new String(messageBytes.toByteArray()));
+            encryptedHashMessage = ByteString.copyFrom(CryptographicFunctions
+            .encrypt(privateKey, hashMessage.getBytes()));
+        }
+        catch (Exception e){
+            logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
+            return;
+        }
+
+		
+        receiveAmountRequest request = receiveAmountRequest.newBuilder().setPublicKeyClient(ByteString.copyFrom(publicKeyBytes))
+        .setMovementId(transferID).setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage).build();   
+
+		receiveAmountResponse response = stub.withDeadlineAfter(7000, TimeUnit.MILLISECONDS).receiveAmount(request);
+        if(response.getSequenceNumber() != sequenceNumber + 1){
+            logger.log("Trudy detected. eliminate");
+            return;
+        }
+
+        
+        try{
+            messageBytes = new ByteArrayOutputStream();
+            messageBytes.write(response.getPendingMovementsList().toString().getBytes());
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(response.getBalance()).getBytes());
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(response.getSequenceNumber()).getBytes());
+            
+            serverPublicKey = CryptographicFunctions.getServerPublicKey("../crypto/");
+            String hashMessageString = CryptographicFunctions.decrypt(serverPublicKey.getEncoded(), response.getHashMessage().toByteArray()); 
+            if(!CryptographicFunctions.verifyMessageHash(messageBytes.toByteArray(), hashMessageString)){
+                logger.log("fake server detected. eliminate");
+                return;
+            }
+        
+            List<Integer> nonce = new ArrayList<>(sequenceNumber);
+            nonces.put(userID, nonce);
+
+            System.out.println("Pending movements: ");
+            for(int transferID : response.getPendingMovementsList()){
+                System.out.println(transferID + ", ");
+            }
+            System.out.println("\nCurrent balance: " + response.getBalance());
+        }
+        catch(Exception e){
+            logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
+        }
+		System.out.println(response);*/
+    }
+
+
+
+
 
 
     public void channelEnd() {

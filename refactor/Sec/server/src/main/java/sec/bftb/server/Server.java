@@ -155,6 +155,66 @@ public class Server {
         }
     }
 
+
+
+    public checkAccountResponse check_account(ByteString clientPublicKey, int sequenceNumber, ByteString hashMessage) throws Exception{
+        
+        List <Integer> values = nonces.get(new String(clientPublicKey.toByteArray()));
+        if(values != null && values.contains(sequenceNumber))
+            throw new ServerException(ErrorMessage.SEQUENCE_NUMBER);
+
+        
+        try{
+            ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
+            messageBytes.write(clientPublicKey.toByteArray());
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+            
+            String hashMessageString = CryptographicFunctions.decrypt(clientPublicKey.toByteArray(), hashMessage.toByteArray());
+
+            if(!CryptographicFunctions.verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
+                throw new ServerException(ErrorMessage.MESSAGE_INTEGRITY);
+        
+
+            //TODO:check this
+            float balance = this.serverRepo.getBalance(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()));
+
+            if (balance == -1)
+                throw new ServerException(ErrorMessage.USER_ALREADY_EXISTS);
+            
+            //Do query to obtain transfer ids that are pending acceptance by the user
+
+            List<Integer> changeLater = new ArrayList<>(); // substitue later for transfer ids list
+            ByteArrayOutputStream replyBytes = new ByteArrayOutputStream();
+            replyBytes.write(changeLater.toString().getBytes());
+            replyBytes.write(":".getBytes());
+            replyBytes.write(String.valueOf(balance).getBytes());
+            replyBytes.write(":".getBytes());
+            replyBytes.write(String.valueOf(sequenceNumber + 1).getBytes());
+            
+            String hashReply = CryptographicFunctions.hashString(new String(replyBytes.toByteArray()));
+            ByteString encryptedHashReply = ByteString.copyFrom(CryptographicFunctions
+            .encrypt(CryptographicFunctions.getServerPrivateKey("../crypto/"), hashReply.getBytes()));
+        
+        
+            List<Integer> nonce = new ArrayList<>(sequenceNumber);
+            nonces.put(new String(clientPublicKey.toByteArray()), nonce);
+
+            checkAccountResponse response = checkAccountResponse.newBuilder().addAllPendingMovements(changeLater)
+                        .setBalance(balance).setSequenceNumber(sequenceNumber + 1)
+                        .setHashMessage(encryptedHashReply).build();
+            return response;
+        }  
+        catch(GeneralSecurityException e){
+            logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
+            throw new GeneralSecurityException(e); 
+        }
+    }
+
+
+
+
+
     
 
 	
