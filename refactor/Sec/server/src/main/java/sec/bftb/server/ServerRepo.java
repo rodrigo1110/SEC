@@ -94,6 +94,31 @@ public class ServerRepo {
         }
     }
 
+    /*public List<User> getMovments(String pubKey) throws SQLException{
+        try{ 
+            String query = "SELECT movementId,amount,sourceAccount,destinationAccount,trasferStatus FROM remotedocs_permissions WHERE destinationAccount = ? and transferStatus = 'PENDING'";
+            ArrayList<User> listOfUsers = new ArrayList<>();
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setString(1, pubKey);
+
+            resultSet = statement.executeQuery();
+            while(resultSet.next()){
+                String source = resultSet.getString("sourceAccount");
+                String destination = resultSet.getString("destinationAccount");
+                String status = resultSet.getString("trasferStatus");
+                int transferId = resultSet.getInt("movementId");      
+                int amount = resultSet.getInt("amount");
+
+                listOfUsers.add(new User(username, permission));
+            }
+
+            return listOfUsers;
+        } finally {
+            closeConnection();
+        }
+    }*/
+
     public void addTransfer(String srcPubKey, String destPubKey, Float amount, int movementId, String trasferStatus) throws SQLException {
         try {
             String query = "INSERT INTO movement (movementId, amount, sourceAccount, destinationAccount, transferStatus) VALUES (?, ?, ?, ?, ?)";
