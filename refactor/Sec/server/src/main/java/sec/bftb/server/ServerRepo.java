@@ -97,14 +97,15 @@ public class ServerRepo {
         }
     }
 
-    public List<Movement> getMovements(String pubKey, String flag) throws SQLException{
+
+
+    public List<Movement> getPendingMovements(String pubKey) throws SQLException{
         try{ 
-            String query = "SELECT movementId,amount,sourceAccount,destinationAccount,transferStatus FROM movement WHERE destinationAccount = ? and transferStatus = ?";
+            String query = "SELECT movementId,amount,sourceAccount,destinationAccount,transferStatus FROM movement WHERE destinationAccount = ? and transferStatus = 'PENDING'";
             ArrayList<Movement> movements = new ArrayList<>();
             connection = this.newConnection();
             statement = connection.prepareStatement(query);
             statement.setString(1, pubKey);
-            statement.setString(2,flag);
 
             resultSet = statement.executeQuery();
             while(resultSet.next()){
@@ -118,34 +119,63 @@ public class ServerRepo {
 
                 movements.add(mov);
             }
-
-            if(flag!="PENDING"){
-                String query2 = "SELECT movementId,amount,sourceAccount,destinationAccount,transferStatus FROM movement WHERE destinationAccount = ? and transferStatus = ?";
-                connection = this.newConnection();
-                statement = connection.prepareStatement(query);
-                statement.setString(1, pubKey);
-                statement.setString(2,"NOT_APPROVED");
-
-                resultSet = statement.executeQuery();
-                while(resultSet.next()){
-                    String source = resultSet.getString("sourceAccount");
-                    String destination = resultSet.getString("destinationAccount");
-                    String status = resultSet.getString("transferStatus");
-                    int transferId = resultSet.getInt("movementId");      
-                    float amount = resultSet.getFloat("amount");
-
-                    Movement mov = Movement.newBuilder().setMovementID(transferId).setAmount(amount).setStatus(status).build();
-
-                    movements.add(mov);
-                }
-            }
-
-
             return movements;
+
         } finally {
             closeConnection();
         }
     }
+
+
+
+    public List<Movement> getCompletedMovements(String pubKey) throws SQLException{
+        try{ 
+            String query = "SELECT movementId,amount,sourceAccount,destinationAccount,transferStatus FROM movement WHERE destinationAccount = ? and transferStatus = 'APPROVED'";
+            String query2 = "SELECT movementId,amount,sourceAccount,destinationAccount,transferStatus FROM movement WHERE sourceAccount = ? and transferStatus = 'APPROVED'";
+
+            ArrayList<Movement> movements = new ArrayList<>();
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setString(1, pubKey);
+
+            resultSet = statement.executeQuery();
+            while(resultSet.next()){
+                String source = resultSet.getString("sourceAccount");
+                String destination = resultSet.getString("destinationAccount");
+                String status = resultSet.getString("transferStatus");
+                int transferId = resultSet.getInt("movementId");      
+                float amount = resultSet.getFloat("amount");
+
+                Movement mov = Movement.newBuilder().setMovementID(transferId).setAmount(amount)
+                .setStatus(status).setDirectionOfTransfer("Received").build();
+
+                movements.add(mov);
+            }
+
+            statement = connection.prepareStatement(query2);
+            statement.setString(1, pubKey);
+
+            resultSet = statement.executeQuery();
+            while(resultSet.next()){
+                String source = resultSet.getString("sourceAccount");
+                String destination = resultSet.getString("destinationAccount");
+                String status = resultSet.getString("transferStatus");
+                int transferId = resultSet.getInt("movementId");      
+                float amount = resultSet.getFloat("amount");
+
+                Movement mov = Movement.newBuilder().setMovementID(transferId).setAmount(amount)
+                .setStatus(status).setDirectionOfTransfer("Sent").build();
+
+                movements.add(mov);
+            }
+
+            return movements;
+
+        } finally {
+            closeConnection();
+        }
+    }
+    
 
 
     public void addTransfer(String srcPubKey, String destPubKey, Float amount, int movementId, String transferStatus) throws SQLException {
@@ -164,7 +194,7 @@ public class ServerRepo {
         }
     }
 
-    public void receiveAmount(int id, String newStatus, float balance) throws SQLException {
+    public int receiveAmount(int id, String newStatus, float balance) throws SQLException {
         try {
             String query2 = "SELECT amount, destinationAccount FROM movement WHERE movementId=?";
             String query = "UPDATE movement SET transferStatus=? WHERE movementId=?";
@@ -173,16 +203,17 @@ public class ServerRepo {
             connection = this.newConnection();
             statement = connection.prepareStatement(query2);
             statement.setInt(1, id);
-            statement.executeUpdate();
+           // statement.executeUpdate();
 
             resultSet = statement.executeQuery();
             float amount = 0;
             String pubKey = "";
-            if (resultSet.next()) {
-                amount = resultSet.getFloat("amount");  
-                pubKey = resultSet.getString("destinationAccount");
+            if (!resultSet.next()) 
+                return -1;
+            
+            amount = resultSet.getFloat("amount");  
+            pubKey = resultSet.getString("destinationAccount");
 
-            }
             statement = connection.prepareStatement(query);
             statement.setString(1, newStatus);
             statement.setInt(2, id);
@@ -193,7 +224,7 @@ public class ServerRepo {
             statement.setFloat(1, newBalance);
             statement.setString(2, pubKey);
             statement.executeUpdate();
-           
+            return 0;
 
         } finally {
             closeConnection();

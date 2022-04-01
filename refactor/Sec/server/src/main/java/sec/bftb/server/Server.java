@@ -186,8 +186,8 @@ public class Server {
             if (balance == -1)
                 throw new ServerException(ErrorMessage.NO_SUCH_USER);
             
-            //TODO query to obtain transfer ids (and respective users and money involved) that are pending acceptance --> List of movements
-            List<Movement> movements = this.serverRepo.getMovements(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()), "PENDING");
+           
+            List<Movement> movements = this.serverRepo.getPendingMovements(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()));
 
             //List<Movement> changeLater = new ArrayList<>(); // substitute later for Movement list
             ByteArrayOutputStream replyBytes = new ByteArrayOutputStream();
@@ -245,9 +245,10 @@ public class Server {
             if (receiverBalance == -1)
                 throw new ServerException(ErrorMessage.NO_SUCH_USER);
             
-            this.serverRepo.receiveAmount(transferID, "APPROVED", receiverBalance);
+            int flag = this.serverRepo.receiveAmount(transferID, "APPROVED", receiverBalance);
+            if(flag == -1)
+                throw new ServerException(ErrorMessage.NO_SUCH_TRANSFER);
             
-            //TODO: obtain transfer and update respective balances of both users involved in it
             
 
             ByteArrayOutputStream replyBytes = new ByteArrayOutputStream();
@@ -296,7 +297,7 @@ public class Server {
             if (balance == -1)
                 throw new ServerException(ErrorMessage.USER_ALREADY_EXISTS);
 
-            List<Movement> movements = this.serverRepo.getMovements(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()), "APPROVED");
+            List<Movement> movements = this.serverRepo.getCompletedMovements(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()));
             
             //TODO query to obtain history of movements that have been accepted (or not) by the user
 

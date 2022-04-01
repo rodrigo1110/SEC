@@ -404,7 +404,7 @@ public class Client {
             System.out.println("Accepted movements: ");
             for(Movement mov : response.getConfirmedMovementsList()){
                 System.out.println("Movement " + mov.getMovementID() + ":");
-                System.out.println("Status: " + mov.getStatus() + ", Amount: " + mov.getAmount());
+                System.out.println("Status: " + mov.getStatus() + ", " + mov.getDirectionOfTransfer() + " amount: " + mov.getAmount());
             }
         }
         catch(Exception e){

@@ -2,14 +2,14 @@
 
 Before all tests, do the following:
 
-Start by creating two accounts, using the **open** command, assigning a password to each one, saving both ids. Use the first one as sender and the second as receiver
+Start by creating two accounts, using the **open** command, assigning a password to each one, saving both ids and the generated passwords. Use the first one as sender and the second as receiver
 ```shell
 open [password_sender]
 open [password_receiver]
 ```
 ### NORMAL RUN TEST
 
-Use the ids created before and confirm that the accounts have been create their balance is for 50.0 (initial balance established), using the **check** command
+Use the ids created before and the passwords and confirm that the accounts have been created and their balance is 50.0 (initial balance established), using the **check** command
 ```shell
 check [password_sender] [sender_id]
 check [password_receiver] [receiver_id]
@@ -26,12 +26,12 @@ Now, use the **check** command to see the Pending movements for the receiver. Sa
 ```shell
 check [receiver_sender] [receiver_id]
 ```
-Accept the movement, using the **receive** command and the id previously saved. Then, see if the balance has changed
+Accept the movement, using the **receive** command and the movement id previously saved. Then, see if the balance has changed
 ```shell
 receive [password_receiver] [receiver_id] [movement_id]
 check [password_receiver] [receiver_id]
 ```
-To see all movements related to an account, use the **audit** command
+To see all confirmed/rejected movements related to an account, use the **audit** command
 ```shell
 audit [password_receiver] [receiver_id]
 ```
@@ -64,7 +64,7 @@ receive [password_receiver] 1000
 ```
 
 ### MOVEMENT ALREADY ACCEPTED TEST
-Start by confirming both accounts exists and have no pending movements
+Start by confirming both accounts exist and have no pending movements
 ```shell
 check [password_sender] [sender_id]
 check [password_receiver] [receiver_id]

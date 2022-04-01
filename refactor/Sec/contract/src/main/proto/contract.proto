@@ -6,6 +6,7 @@ message Movement {
 	int32 movementID = 1;
 	float amount = 2;
 	string status = 3;
+	string directionOfTransfer = 4;
 }
 
 message PingRequest {
