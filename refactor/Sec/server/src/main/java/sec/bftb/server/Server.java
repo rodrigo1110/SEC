@@ -127,7 +127,7 @@ public class Server {
                 throw new ServerException(ErrorMessage.SOURCE_ACCOUNT_DOESNT_EXIST);
             if(balance<amount)
                 throw new ServerException(ErrorMessage.NOT_ENOUGH_BALANCE);
-            //create transfer and return transfer id
+            //TODO create transfer and return transfer id
 
 
             ByteArrayOutputStream replyBytes = new ByteArrayOutputStream();
@@ -176,13 +176,12 @@ public class Server {
                 throw new ServerException(ErrorMessage.MESSAGE_INTEGRITY);
         
 
-            //TODO:check this
+            //Obtain user's balance
             float balance = this.serverRepo.getBalance(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()));
-
             if (balance == -1)
-                throw new ServerException(ErrorMessage.USER_ALREADY_EXISTS);
+                throw new ServerException(ErrorMessage.NO_SUCH_USER);
             
-            //Do query to obtain transfer ids that are pending acceptance by the user
+            //TODO query to obtain transfer ids that are pending acceptance by the user
 
             List<Integer> changeLater = new ArrayList<>(); // substitute later for transfer ids list
             ByteArrayOutputStream replyBytes = new ByteArrayOutputStream();
@@ -234,11 +233,14 @@ public class Server {
                 throw new ServerException(ErrorMessage.MESSAGE_INTEGRITY);
         
 
-            //TODO: obtain transfer and update respective balances of both users involved in it
-            float balance = this.serverRepo.getBalance(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()));
-            if (balance == -1)
-                throw new ServerException(ErrorMessage.USER_ALREADY_EXISTS);
+            //Checks if user exists and obtains his balance
+            float balanceSender = this.serverRepo.getBalance(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()));
+            if (balanceSender == -1)
+                throw new ServerException(ErrorMessage.NO_SUCH_USER);
             
+            
+            
+            //TODO: obtain transfer and update respective balances of both users involved in it
             
 
             ByteArrayOutputStream replyBytes = new ByteArrayOutputStream();
@@ -263,8 +265,53 @@ public class Server {
     }
 
 
-
+    public auditResponse audit(ByteString clientPublicKey, int sequenceNumber, ByteString hashMessage) throws Exception{
     
+        List <Integer> values = nonces.get(new String(clientPublicKey.toByteArray()));
+        if(values != null && values.contains(sequenceNumber))
+            throw new ServerException(ErrorMessage.SEQUENCE_NUMBER);
 
-	
+        
+        try{
+            ByteArrayOutputStream messageBytes = new ByteArrayOutputStream();
+            messageBytes.write(clientPublicKey.toByteArray());
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+            
+            String hashMessageString = CryptographicFunctions.decrypt(clientPublicKey.toByteArray(), hashMessage.toByteArray());
+
+            if(!CryptographicFunctions.verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
+                throw new ServerException(ErrorMessage.MESSAGE_INTEGRITY);
+        
+
+            //Verifies if user exists or not
+            float balance = this.serverRepo.getBalance(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()));
+            if (balance == -1)
+                throw new ServerException(ErrorMessage.USER_ALREADY_EXISTS);
+            
+            //TODO query to obtain history of transfer ids that have been accepted by the user
+
+            List<Integer> changeLater = new ArrayList<>(); // substitute later for transfer ids list
+            ByteArrayOutputStream replyBytes = new ByteArrayOutputStream();
+            replyBytes.write(changeLater.toString().getBytes());
+            replyBytes.write(":".getBytes());
+            replyBytes.write(String.valueOf(sequenceNumber + 1).getBytes());
+            
+            String hashReply = CryptographicFunctions.hashString(new String(replyBytes.toByteArray()));
+            ByteString encryptedHashReply = ByteString.copyFrom(CryptographicFunctions
+            .encrypt(CryptographicFunctions.getServerPrivateKey("../crypto/"), hashReply.getBytes()));
+        
+        
+            List<Integer> nonce = new ArrayList<>(sequenceNumber);
+            nonces.put(new String(clientPublicKey.toByteArray()), nonce);
+
+            auditResponse response = auditResponse.newBuilder().addAllConfirmedMovements(changeLater)
+                        .setSequenceNumber(sequenceNumber + 1).setHashMessage(encryptedHashReply).build();
+            return response;
+        }  
+        catch(GeneralSecurityException e){
+            logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
+            throw new GeneralSecurityException(e); 
+        }
+    }
 }

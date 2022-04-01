@@ -85,10 +85,9 @@ message auditRequest{
 }
 
 message auditResponse{
-	repeated int32 numberMovements = 1;
-	float balance = 2;
-	int32 sequenceNumber = 3;
-	bytes hashMessage = 4;
+	repeated int32 confirmedMovements = 1;
+	int32 sequenceNumber = 2;
+	bytes hashMessage = 3;
 }
 
 

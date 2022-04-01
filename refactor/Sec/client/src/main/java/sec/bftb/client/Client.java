@@ -333,6 +333,75 @@ public class Client {
 
 
 
+    //----------------------------Audit-----------------------------
+    public void audit(int userID){
+        
+        ByteArrayOutputStream messageBytes;
+        String hashMessage;
+        int sequenceNumber;
+        ByteString encryptedHashMessage;
+        byte[] publicKeyBytes;
+        Key privateKey;
+
+
+        sequenceNumber = generateNonce(userID);
+        try{
+            privateKey = CryptographicFunctions.getClientPrivateKey(userID);
+            publicKeyBytes = CryptographicFunctions.getClientPublicKey(userID).getEncoded();
+        
+            messageBytes = new ByteArrayOutputStream();
+            messageBytes.write(publicKeyBytes);
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(sequenceNumber).getBytes());
+            
+            hashMessage = CryptographicFunctions.hashString(new String(messageBytes.toByteArray()));
+            encryptedHashMessage = ByteString.copyFrom(CryptographicFunctions
+            .encrypt(privateKey, hashMessage.getBytes()));
+        }
+        catch (Exception e){
+            logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
+            return;
+        }
+
+		
+        auditRequest request = auditRequest.newBuilder().setPublicKeyClient(ByteString.copyFrom(publicKeyBytes))
+        .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage).build();   
+
+		auditResponse response = stub.withDeadlineAfter(7000, TimeUnit.MILLISECONDS).audit(request);
+        if(response.getSequenceNumber() != sequenceNumber + 1){
+            logger.log("Invalid sequence number. Possible replay attack detected.");
+            return;
+        }
+
+        
+        try{
+            messageBytes = new ByteArrayOutputStream();
+            messageBytes.write(response.getConfirmedMovementsList().toString().getBytes());
+            messageBytes.write(":".getBytes());
+            messageBytes.write(String.valueOf(response.getSequenceNumber()).getBytes());
+            
+            serverPublicKey = CryptographicFunctions.getServerPublicKey("../crypto/");
+            String hashMessageString = CryptographicFunctions.decrypt(serverPublicKey.getEncoded(), response.getHashMessage().toByteArray()); 
+            if(!CryptographicFunctions.verifyMessageHash(messageBytes.toByteArray(), hashMessageString)){
+                logger.log("Message reply integrity compromissed.");
+                return;
+            }
+        
+            List<Integer> nonce = new ArrayList<>(sequenceNumber);
+            nonces.put(userID, nonce);
+
+            System.out.println("Accepted movements: ");
+            for(int transferID : response.getConfirmedMovementsList()){
+                System.out.println(transferID + ", ");
+            }
+        }
+        catch(Exception e){
+            logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
+        }
+		System.out.println(response);
+    }
+
+
 
 
 

@@ -2,6 +2,8 @@ package sec.bftb.client;
 
 import java.util.Scanner;
 
+import javax.lang.model.util.ElementScanner6;
+
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import sec.bftb.grpc.Contract.*;
@@ -50,28 +52,40 @@ public class ClientMain {
 							user.open();
 							break;
 						case "send":
-							user.send(Integer.parseInt(command[1]), Integer.parseInt(command[2]),Float.parseFloat(command[3]));
+							if(command.length == 4)
+								user.send(Integer.parseInt(command[1]), Integer.parseInt(command[2]),Float.parseFloat(command[3]));
+							else
+								System.out.printf("Send command must have exaclty 3 arguments: senderUserID receiverUserID AmoutOfTransfer.%n");
 							break;
 						case "check":
-							user.check(Integer.parseInt(command[1]));
+							if(command.length == 2)
+								user.check(Integer.parseInt(command[1]));
+							else 
+								System.out.printf("Check command must have exactly 1 argument: UserID.%n");
 							break;
 						case "receive":
-							user.receive(Integer.parseInt(command[1]), Integer.parseInt(command[2]));
+							if(command.length == 3)
+								user.receive(Integer.parseInt(command[1]), Integer.parseInt(command[2]));
+							else
+								System.out.printf("Receive command must have exactly 2 arguments: UserID TransferId.%n");
 							break;
-						/*case "audit":
-							user.audit();
+						case "audit":
+							if(command.length == 2)
+								user.audit(Integer.parseInt(command[1]));
+							else
+								System.out.printf("Audit command must have exactly 1 argument: UserID.%n");
 							break;
-						case "mov": //for debug
+						/*case "mov": //for debug
 							user.checkMovement(Integer.parseInt(command[1]));
 							break;*/
 						case "help":
 							System.out.printf("Avaliable operations:\n");
 							//System.out.printf(" - signup -> create credentials (necessary only once) \n");
 							System.out.printf(" - open -> open account \n");
-							System.out.printf(" - send (1) (2) -> send amount (2) to who (1) \n");
-							System.out.printf(" - check -> check balance and pending movements of account \n");
-							System.out.printf(" - receive (1) -> approve movement (1) \n");
-							System.out.printf(" - audit -> check balance and all movements of account\n");
+							System.out.printf(" - send (1) (2) (3) -> send amount (3) from (1) to (2) \n");
+							System.out.printf(" - check (1)-> check balance and pending movements of account (1) \n");
+							System.out.printf(" - receive (1) (2) -> approve movement (2) with account(1)  \n");
+							System.out.printf(" - audit (1) -> check balance and all movements of account (1) \n");
 							System.out.printf(" - exit\n");
 							break;
 						case "exit":

@@ -86,7 +86,7 @@ public class ServerServiceImpl extends BFTBankingGrpc.BFTBankingImplBase {
 		}
 	}
 
-	/*
+	
 	@Override
 	public void audit(auditRequest request, StreamObserver<auditResponse> responseObserver) {
 		try{
@@ -98,7 +98,7 @@ public class ServerServiceImpl extends BFTBankingGrpc.BFTBankingImplBase {
 		catch (Exception e){
 			responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
 		}
-	}*/
+	}
 
 
 }

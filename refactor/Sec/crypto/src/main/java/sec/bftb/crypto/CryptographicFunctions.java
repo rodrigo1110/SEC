@@ -54,39 +54,51 @@ public class CryptographicFunctions{
 
     
     public static Key getClientPublicKey(int userID) throws Exception {
+        try{
+            byte[] keyBytes = Files.readAllBytes(Paths.get("../crypto/keys/publicKeys/" + userID + "-PublicKey"));
     
-        byte[] keyBytes = Files.readAllBytes(Paths.get("../crypto/keys/publicKeys/" + userID + "-PublicKey"));
-    
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
-        return kf.generatePublic(spec);
+            X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            return kf.generatePublic(spec);
+        }catch(IOException e){
+            throw new Exception("Client's " + userID + " public key not found");
+        }
     }
 
     public static Key getServerPublicKey(String path) throws Exception {
-    
-        byte[] keyBytes = Files.readAllBytes(Paths.get(path + "keys/serverPublicKey"));
-    
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
-        return kf.generatePublic(spec);
+        try{
+            byte[] keyBytes = Files.readAllBytes(Paths.get(path + "keys/serverPublicKey"));
+        
+            X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            return kf.generatePublic(spec);
+        }catch(IOException e){
+            throw new Exception("Server's public key not found");
+        }
     }
     
     public static Key getClientPrivateKey(int userID) throws Exception {
-    
-        byte[] keyBytes = Files.readAllBytes(Paths.get("../crypto/keys/privateKeys/" + userID + "-PrivateKey"));
-    
-        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
-        return kf.generatePrivate(spec);
+        try{
+            byte[] keyBytes = Files.readAllBytes(Paths.get("../crypto/keys/privateKeys/" + userID + "-PrivateKey"));
+        
+            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            return kf.generatePrivate(spec);
+        }catch(IOException e){
+            throw new Exception("Client's " + userID + " private key not found");
+        }
     }
 
     public static Key getServerPrivateKey(String path) throws Exception {
-    
-        byte[] keyBytes = Files.readAllBytes(Paths.get(path + "keys/serverPrivateKey"));
-    
-        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
-        return kf.generatePrivate(spec);
+        try{
+            byte[] keyBytes = Files.readAllBytes(Paths.get(path + "keys/serverPrivateKey"));
+        
+            PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            return kf.generatePrivate(spec);
+        }catch(IOException e){
+            throw new Exception("Server's private key not found");
+        }
     }
 
 
