@@ -62,7 +62,7 @@ public class ClientMain {
 							break;
 						case "check":
 							if(command.length == 3)
-								user.check(command[1], Integer.parseInt(command[1]));
+								user.check(command[1], Integer.parseInt(command[2]));
 							else 
 								System.out.printf("Check command must have exactly 2 arguments: Password UserID.%n");
 							break;

@@ -99,7 +99,7 @@ public class ServerRepo {
 
     public List<Movement> getMovements(String pubKey, String flag) throws SQLException{
         try{ 
-            String query = "SELECT movementId,amount,sourceAccount,destinationAccount,trasferStatus FROM movements WHERE destinationAccount = ? and transferStatus = ?";
+            String query = "SELECT movementId,amount,sourceAccount,destinationAccount,transferStatus FROM movement WHERE destinationAccount = ? and transferStatus = ?";
             ArrayList<Movement> movements = new ArrayList<>();
             connection = this.newConnection();
             statement = connection.prepareStatement(query);
@@ -110,7 +110,7 @@ public class ServerRepo {
             while(resultSet.next()){
                 String source = resultSet.getString("sourceAccount");
                 String destination = resultSet.getString("destinationAccount");
-                String status = resultSet.getString("trasferStatus");
+                String status = resultSet.getString("transferStatus");
                 int transferId = resultSet.getInt("movementId");      
                 float amount = resultSet.getFloat("amount");
 
@@ -120,7 +120,7 @@ public class ServerRepo {
             }
 
             if(flag!="PENDING"){
-                String query2 = "SELECT movementId,amount,sourceAccount,destinationAccount,trasferStatus FROM movements WHERE destinationAccount = ? and transferStatus = ?";
+                String query2 = "SELECT movementId,amount,sourceAccount,destinationAccount,transferStatus FROM movement WHERE destinationAccount = ? and transferStatus = ?";
                 connection = this.newConnection();
                 statement = connection.prepareStatement(query);
                 statement.setString(1, pubKey);
@@ -130,7 +130,7 @@ public class ServerRepo {
                 while(resultSet.next()){
                     String source = resultSet.getString("sourceAccount");
                     String destination = resultSet.getString("destinationAccount");
-                    String status = resultSet.getString("trasferStatus");
+                    String status = resultSet.getString("transferStatus");
                     int transferId = resultSet.getInt("movementId");      
                     float amount = resultSet.getFloat("amount");
 
@@ -148,7 +148,7 @@ public class ServerRepo {
     }
 
 
-    public void addTransfer(String srcPubKey, String destPubKey, Float amount, int movementId, String trasferStatus) throws SQLException {
+    public void addTransfer(String srcPubKey, String destPubKey, Float amount, int movementId, String transferStatus) throws SQLException {
         try {
             String query = "INSERT INTO movement (movementId, amount, sourceAccount, destinationAccount, transferStatus) VALUES (?, ?, ?, ?, ?)";
             connection = this.newConnection();
@@ -157,13 +157,48 @@ public class ServerRepo {
             statement.setFloat(2, amount);
             statement.setString(3, srcPubKey);
             statement.setString(4, destPubKey);
-            statement.setString(5, trasferStatus);
+            statement.setString(5, transferStatus);
             statement.executeUpdate();
         } finally {
             closeConnection();
         }
     }
 
+    public void receiveAmount(int id, String newStatus, float balance) throws SQLException {
+        try {
+            String query2 = "SELECT amount, destinationAccount FROM movement WHERE movementId=?";
+            String query = "UPDATE movement SET transferStatus=? WHERE movementId=?";
+            String query3 = "UPDATE account SET balance=? WHERE pubKey=?";
+
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query2);
+            statement.setInt(1, id);
+            statement.executeUpdate();
+
+            resultSet = statement.executeQuery();
+            float amount = 0;
+            String pubKey = "";
+            if (resultSet.next()) {
+                amount = resultSet.getFloat("amount");  
+                pubKey = resultSet.getString("destinationAccount");
+
+            }
+            statement = connection.prepareStatement(query);
+            statement.setString(1, newStatus);
+            statement.setInt(2, id);
+            statement.executeUpdate();
+
+            float newBalance = amount + balance;
+            statement = connection.prepareStatement(query3);
+            statement.setFloat(1, newBalance);
+            statement.setString(2, pubKey);
+            statement.executeUpdate();
+           
+
+        } finally {
+            closeConnection();
+        }
+    }
 
     public float getBalance(String pubKey) throws SQLException {
         try {

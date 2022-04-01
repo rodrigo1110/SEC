@@ -241,11 +241,11 @@ public class Server {
         
 
             //Checks if user exists and obtains his balance
-            float balanceSender = this.serverRepo.getBalance(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()));
-            if (balanceSender == -1)
+            float receiverBalance = this.serverRepo.getBalance(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()));
+            if (receiverBalance == -1)
                 throw new ServerException(ErrorMessage.NO_SUCH_USER);
             
-            
+            this.serverRepo.receiveAmount(transferID, "APPROVED", receiverBalance);
             
             //TODO: obtain transfer and update respective balances of both users involved in it
             
