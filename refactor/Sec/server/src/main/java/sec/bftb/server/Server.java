@@ -34,12 +34,10 @@ public class Server {
     private final Logger logger;
     private final int serverPort;
     private Map<String, List<Integer>> nonces = new TreeMap<>();
-    //protected static final String KEY_PASSWORD = BFTBKeyStore.generatePassword();
 
 	public Server(int server_port)
             throws IOException {
 
-        //BFTBKeyStore.storeKeyPair(BFTBKeyStore.KEYSTORE_PASSWORD, String.valueOf(serverPort), BFTBKeyStore.generateKeyPair(), KEY_PASSWORD);
         serverRepo = new ServerRepo(server_port);
         logger = new Logger("Server", "App");
         serverPort = server_port;
@@ -48,8 +46,6 @@ public class Server {
 	public synchronized String ping() {
 		return "I'm alive!";
 	}
-
-
 
     public openAccountResponse open_account(ByteString clientPublicKey, int sequenceNumber, ByteString hashMessage) throws Exception{
         
@@ -69,9 +65,11 @@ public class Server {
             if(!CryptographicFunctions.verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
                 throw new ServerException(ErrorMessage.MESSAGE_INTEGRITY);
         
-        
-        //getBalance (if!=-1) -> já existe -> devolve erros
-        //see if key already exists in db (if it does throw user already existent exception (must also sign exceptions)) - Larissa
+            
+            float balance = this.serverRepo.getBalance(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()));
+
+            if (balance != -1)
+                throw new ServerException(ErrorMessage.USER_ALREADY_EXISTS);
             this.serverRepo.openAccount(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()), INITIAL_BALANCE);
 
             ByteArrayOutputStream replyBytes = new ByteArrayOutputStream();
