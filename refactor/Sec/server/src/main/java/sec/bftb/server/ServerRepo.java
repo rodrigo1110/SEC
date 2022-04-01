@@ -95,6 +95,10 @@ public class ServerRepo {
         }
     }
 
+    public void transfer(){
+        
+    }
+
     public float getBalance(String pubKey) throws SQLException {
         try {
             String query = "SELECT balance FROM account WHERE pubKey=?";

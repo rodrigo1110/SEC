@@ -100,6 +100,7 @@ public class Server {
 
     public sendAmountResponse send_amount(ByteString sourcePublicKey, ByteString destinationPublicKey, float amount, int sequenceNumber, ByteString hashMessage) throws Exception{
 
+        float balance;
         List <Integer> values = nonces.get(new String(sourcePublicKey.toByteArray()));
         if(values != null && values.contains(sequenceNumber))
             throw new ServerException(ErrorMessage.SEQUENCE_NUMBER);
@@ -117,10 +118,17 @@ public class Server {
             String hashMessageString = CryptographicFunctions.decrypt(sourcePublicKey.toByteArray(), hashMessage.toByteArray());
             if(!CryptographicFunctions.verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
                 throw new ServerException(ErrorMessage.MESSAGE_INTEGRITY);
-        
-            //see if source and destination exist in DB --> Unknown user exception
-            //see if has balance source.has_balance(amount) --> Not enough balance exception
+            
+            balance = this.serverRepo.getBalance(Base64.getEncoder().encodeToString(destinationPublicKey.toByteArray()));
+            if (balance == -1)
+                throw new ServerException(ErrorMessage.DESTINATION_ACCOUNT_DOESNT_EXIST); 
+            balance = this.serverRepo.getBalance(Base64.getEncoder().encodeToString(sourcePublicKey.toByteArray()));
+            if (balance == -1)
+                throw new ServerException(ErrorMessage.SOURCE_ACCOUNT_DOESNT_EXIST);
+            if(balance<amount)
+                throw new ServerException(ErrorMessage.NOT_ENOUGH_BALANCE);
             //create transfer and return transfer id
+
 
             ByteArrayOutputStream replyBytes = new ByteArrayOutputStream();
             replyBytes.write(String.valueOf(7).getBytes()); //TODO replace 7 for actual transfer id
