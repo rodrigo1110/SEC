@@ -77,7 +77,7 @@ public class ServerServiceImpl extends BFTBankingGrpc.BFTBankingImplBase {
 	public void receiveAmount(receiveAmountRequest request, StreamObserver<receiveAmountResponse> responseObserver) {
 		try{
 			receiveAmountResponse response = server.receive_amount(request.getPublicKeyClient(), 
-			request. getMovementId(), request.getSequenceNumber(), request.getHashMessage());
+			request.getMovementId(), request.getSequenceNumber(), request.getHashMessage());
 			responseObserver.onNext(response);
 			responseObserver.onCompleted();
 		}

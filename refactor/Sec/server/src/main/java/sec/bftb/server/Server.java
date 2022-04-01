@@ -125,11 +125,17 @@ public class Server {
                 throw new ServerException(ErrorMessage.SOURCE_ACCOUNT_DOESNT_EXIST);
             if(balance<amount)
                 throw new ServerException(ErrorMessage.NOT_ENOUGH_BALANCE);
-            //TODO create transfer and return transfer id
 
+            this.serverRepo.updateBalance(Base64.getEncoder().encodeToString(sourcePublicKey.toByteArray()), balance-amount);
+
+            int nextId = this.serverRepo.getMaxTranferId() + 1;
+            this.serverRepo.addTransfer(Base64.getEncoder().encodeToString(sourcePublicKey.toByteArray()),
+            Base64.getEncoder().encodeToString(destinationPublicKey.toByteArray()), amount, nextId); 
+
+            
 
             ByteArrayOutputStream replyBytes = new ByteArrayOutputStream();
-            replyBytes.write(String.valueOf(7).getBytes()); //TODO replace 7 for actual transfer id
+            replyBytes.write(String.valueOf(nextId).getBytes()); 
             replyBytes.write(":".getBytes());
             replyBytes.write(String.valueOf(sequenceNumber + 1).getBytes());
             
@@ -142,7 +148,7 @@ public class Server {
             nonces.put(new String(sourcePublicKey.toByteArray()), nonce);
 
             sendAmountResponse response = sendAmountResponse.newBuilder()
-                        .setTransferId(7).setSequenceNumber(sequenceNumber + 1)  //TODO replace 7 for actual transfer id
+                        .setTransferId(nextId).setSequenceNumber(sequenceNumber + 1)  
                         .setHashMessage(encryptedHashReply).build();
             return response;
           

@@ -9,7 +9,7 @@ CREATE TABLE account
 CREATE TABLE movement
 (
     movementId         INTEGER NOT NULL PRIMARY KEY,
-    amount             INTEGER NOT NULL,
+    amount             REAL NOT NULL,
     sourceAccount      INTEGER NOT NULL,
     destinationAccount INTEGER NOT NULL
 );

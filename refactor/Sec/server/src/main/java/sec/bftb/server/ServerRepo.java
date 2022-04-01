@@ -30,7 +30,6 @@ public class ServerRepo {
         this.dbUsername = System.getenv("DB_USERNAME");
         this.dbPassword = System.getenv("DB_PASSWORD");
         this.dbDir = System.getenv("DB_DIR");
-        System.out.println("criei o repo\n");
 
         try {
             connection = this.newConnection();
@@ -95,9 +94,21 @@ public class ServerRepo {
         }
     }
 
-    public void transfer(){
-        
+    public void addTransfer(String srcPubKey, String destPubKey, Float amount, int movementId) throws SQLException {
+        try {
+            String query = "INSERT INTO account (movementId, amount, sourceAccount, destinationAccount) VALUES (?, ?, ?, ?)";
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setInt(1, movementId);
+            statement.setFloat(2, amount);
+            statement.setString(3, srcPubKey);
+            statement.setString(4, destPubKey);
+            statement.executeUpdate();
+        } finally {
+            closeConnection();
+        }
     }
+
 
     public float getBalance(String pubKey) throws SQLException {
         try {
@@ -114,6 +125,37 @@ public class ServerRepo {
                 return -1; //serve para verificar se a conta ja existe
             }
         } finally{
+            closeConnection();
+        }
+    }
+
+    public void updateBalance(String pubKey, float newBalance) throws SQLException {
+        try {
+            String query = "UPDATE account SET balance=? WHERE pubKey=?";
+
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setFloat(1, newBalance);
+            statement.setString(2, pubKey);
+            statement.executeUpdate();
+        } finally {
+            closeConnection();
+        }
+    }
+
+    public int getMaxTranferId() throws SQLException {
+        try {
+            String query = "SELECT MAX(movementId) AS maxId FROM movement";
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            resultSet = statement.executeQuery();
+
+            if (resultSet.next())
+                return resultSet.getInt("maxId");
+            else
+                return -1;
+    
+        } finally {
             closeConnection();
         }
     }

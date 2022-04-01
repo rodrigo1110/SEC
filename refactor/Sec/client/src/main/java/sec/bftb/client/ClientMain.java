@@ -55,7 +55,7 @@ public class ClientMain {
 							if(command.length == 4)
 								user.send(Integer.parseInt(command[1]), Integer.parseInt(command[2]),Float.parseFloat(command[3]));
 							else
-								System.out.printf("Send command must have exaclty 3 arguments: senderUserID receiverUserID AmoutOfTransfer.%n");
+								System.out.printf("Send command must have exactly 3 arguments: senderUserID receiverUserID AmoutOfTransfer.%n");
 							break;
 						case "check":
 							if(command.length == 2)
@@ -82,7 +82,7 @@ public class ClientMain {
 							System.out.printf("Avaliable operations:\n");
 							//System.out.printf(" - signup -> create credentials (necessary only once) \n");
 							System.out.printf(" - open -> open account \n");
-							System.out.printf(" - send (1) (2) (3) -> send amount (3) from (1) to (2) \n");
+							System.out.printf(" - send (1) (2) (3) -> (senderUserID) (receiverUserID) (AmoutOfTransfer) \n");
 							System.out.printf(" - check (1)-> check balance and pending movements of account (1) \n");
 							System.out.printf(" - receive (1) (2) -> approve movement (2) with account(1)  \n");
 							System.out.printf(" - audit (1) -> check balance and all movements of account (1) \n");
