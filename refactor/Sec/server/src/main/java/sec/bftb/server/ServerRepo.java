@@ -136,7 +136,6 @@ public class ServerRepo {
     }
 
 
-
     public List<Movement> getPendingMovements(String pubKey) throws SQLException{
         try{ 
             String query = "SELECT movementId,amount,sourceAccount,destinationAccount,transferStatus FROM movement WHERE destinationAccount = ? and transferStatus = 'PENDING'";
@@ -163,7 +162,6 @@ public class ServerRepo {
             closeConnection();
         }
     }
-
 
 
     public List<Movement> getCompletedMovements(String pubKey) throws SQLException{
@@ -241,7 +239,6 @@ public class ServerRepo {
             connection = this.newConnection();
             statement = connection.prepareStatement(query2);
             statement.setInt(1, id);
-           // statement.executeUpdate();
 
             resultSet = statement.executeQuery();
             float amount = 0;
@@ -281,7 +278,7 @@ public class ServerRepo {
                 return resultSet.getFloat("balance");             
             }
             else{
-                return -1; //serve para verificar se a conta ja existe
+                return -1; 
             }
         } finally{
             closeConnection();

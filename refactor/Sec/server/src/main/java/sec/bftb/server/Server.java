@@ -1,7 +1,6 @@
 package sec.bftb.server;
 
 import sec.bftb.crypto.CryptographicFunctions;
-import sec.bftb.crypto.BFTBKeyStore;
 
 import sec.bftb.server.Logger;
 import sec.bftb.server.exceptions.ErrorMessage;
@@ -10,19 +9,13 @@ import sec.bftb.server.exceptions.ServerException;
 import sec.bftb.grpc.Contract.*;
 import sec.bftb.grpc.BFTBankingGrpc;
 
-import java.io.ByteArrayOutputStream;
 import com.google.common.primitives.Bytes;
 import com.google.protobuf.ByteString;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.TreeMap;
 import java.io.*;
 import java.security.*;
 import java.sql.SQLException;
 import java.util.*;
-import java.io.IOException;
 
 
 public class Server {
@@ -302,16 +295,13 @@ public class Server {
             if(!CryptographicFunctions.verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
                 throw new ServerException(ErrorMessage.MESSAGE_INTEGRITY);
         
-
-            //Verifies if user exists or not
             float balance = this.serverRepo.getBalance(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()));
             if (balance == -1)
                 throw new ServerException(ErrorMessage.USER_ALREADY_EXISTS);
 
             List<Movement> movements = this.serverRepo.getCompletedMovements(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()));
             
-            //TODO query to obtain history of movements that have been accepted (or not) by the user
-
+           
             ByteArrayOutputStream replyBytes = new ByteArrayOutputStream();
             replyBytes.write(movements.toString().getBytes());
             replyBytes.write(":".getBytes());

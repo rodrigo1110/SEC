@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS movement;
 CREATE TABLE account
 (
     pubKey    VARCHAR(5000) NOT NULL PRIMARY KEY,
-    balance   REAL       NOT NULL
+    balance   REAL          NOT NULL
 );
 
 CREATE TABLE movement
