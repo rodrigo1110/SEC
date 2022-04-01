@@ -13,49 +13,58 @@ public class CryptographicFunctions{
     //------------------------------Create/Obtain Keys-------------------------
 
 
-    public void createKeyPair() throws NoSuchAlgorithmException, Exception{
+    public static KeyPair createKeyPair() throws NoSuchAlgorithmException, Exception{
         
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
         keyGen.initialize(1024);
-        KeyPair pair = keyGen.generateKeyPair();
-        Key privateKey = pair.getPrivate();
-        Key publicKey = pair.getPublic();
+        return keyGen.generateKeyPair();
     }
       
 
-    public void saveKeyPair (KeyPair keypair, int userID){
-      File file = null;
-        file = new File("keys/publicKeys/" + userID + "-PublicKey");
-        if (file.createNewFile()) {
-            System.out.println("New file created: " + file.getName());
-            OutputStream os = new FileOutputStream(file);
-            os.write(publicKey.getEncoded());
-            os.close();
-        } 
-        else{
-            System.out.println("User already exists.");
-            return;
-        }
+    public static int saveKeyPair (KeyPair keypair) throws Exception{
+        
+        OutputStream os;
+        
+        Key publicKey = keypair.getPublic();
+        Key privateKey = keypair.getPrivate();
+        int cont = 10000;
+        File file = null;
+        
+        do{
+            cont++;
+            file = new File("../crypto/keys/publicKeys/" + cont + "-PublicKey");
+        } while(!file.createNewFile());
 
-        file = new File("keys/privateKeys/" + userID + "-PrivateKey");
-        if (file.createNewFile()) {
-            System.out.println("New file created: " + file.getName());
-            OutputStream os = new FileOutputStream(file);
-            os.write(privateKey.getEncoded());
-            os.close();
-        } 
-        else{
-            System.out.println("User already exists.");
-            return;
-        }
+        System.out.println("New file created: " + file.getName());
+        os = new FileOutputStream(file);
+        os.write(publicKey.getEncoded());
+        os.close();
+
+
+        file = new File("../crypto/keys/privateKeys/" + cont + "-PrivateKey");
+    
+        System.out.println("New file created: " + file.getName());
+        os = new FileOutputStream(file);
+        os.write(privateKey.getEncoded());
+        os.close();
+
+        return cont;
     }
 
+
     
-    
-    
-    public static Key getPublicKey(String filename) throws Exception {
+    public static Key getClientPublicKey(String filename) throws Exception {
     
         byte[] keyBytes = Files.readAllBytes(Paths.get(filename));
+    
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        return kf.generatePublic(spec);
+    }
+
+    public static Key getServerPublicKey(String path) throws Exception {
+    
+        byte[] keyBytes = Files.readAllBytes(Paths.get(path + "keys/serverPublicKey"));
     
         X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
         KeyFactory kf = KeyFactory.getInstance("RSA");
@@ -71,9 +80,9 @@ public class CryptographicFunctions{
         return kf.generatePrivate(spec);
     }
 
-    public static Key getServerPrivateKey() throws Exception {
+    public static Key getServerPrivateKey(String path) throws Exception {
     
-        byte[] keyBytes = Files.readAllBytes(Paths.get("keys/serverPrivateKey"));
+        byte[] keyBytes = Files.readAllBytes(Paths.get(path + "keys/serverPrivateKey"));
     
         PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
         KeyFactory kf = KeyFactory.getInstance("RSA");
@@ -91,7 +100,6 @@ public class CryptographicFunctions{
 
         byte[] messageDigest = md.digest(secretString.getBytes());
         hashtext = convertToHex(messageDigest);
-        System.out.println("hash text:" + hashtext);
         return hashtext;
     }
 
@@ -116,36 +124,26 @@ public class CryptographicFunctions{
     //---------------------------Encryption/Decryption Functions----------------------------------
 
 
-    public static byte[] encrypt(Key key, byte[] text) {
-        try {
-            Cipher rsa;
-            rsa = Cipher.getInstance("RSA");
-            rsa.init(Cipher.ENCRYPT_MODE, key);
-            return rsa.doFinal(text); 
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+    public static byte[] encrypt(Key key, byte[] text) throws GeneralSecurityException {
+        
+        Cipher rsa;
+        rsa = Cipher.getInstance("RSA");
+        rsa.init(Cipher.ENCRYPT_MODE, key);
+        return rsa.doFinal(text); 
     }
 
    
-    public static String decrypt(byte[] keyBytes, byte[] buffer) {
-        try {
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
-            KeyFactory keyFactory = KeyFactory.getInstance("RSA"); 
-            Key key = keyFactory.generatePublic(keySpec);
+    public static String decrypt(byte[] keyBytes, byte[] buffer) throws GeneralSecurityException {
+        
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA"); 
+        Key key = keyFactory.generatePublic(keySpec);
 
-            Cipher rsa;
-            rsa = Cipher.getInstance("RSA");
-            rsa.init(Cipher.DECRYPT_MODE, key);
-            byte[] value = rsa.doFinal(buffer);
-            return new String(value);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+        Cipher rsa;
+        rsa = Cipher.getInstance("RSA");
+        rsa.init(Cipher.DECRYPT_MODE, key);
+        byte[] value = rsa.doFinal(buffer);
+        return new String(value);
     }
 
 }

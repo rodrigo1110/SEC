@@ -1,10 +1,19 @@
 package sec.bftb.client;
 
 import java.io.ByteArrayOutputStream;
+import java.security.Key;
+import java.security.KeyPair;
+import java.util.concurrent.TimeUnit;
+import java.util.Map;
+import java.util.Random;
+import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.google.protobuf.ByteString;
 
 import sec.bftb.crypto.*;
+import sec.bftb.client.Logger;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -14,13 +23,19 @@ import sec.bftb.grpc.Contract.*;
 public class Client {
     private BFTBankingGrpc.BFTBankingBlockingStub stub;
     private final ManagedChannel channel;
-    private int sequenceNumber;
+    private Key privateKey, serverPublicKey;
+    private final Logger logger;
+    private Map<Integer, List<Integer>> nonces = new TreeMap<>();
 
    
     public Client(String target){
         channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
         stub = BFTBankingGrpc.newBlockingStub(channel);
-        sequenceNumber = 0;
+        logger = new Logger("Client", "App");
+    }
+
+    public ManagedChannel getChannel(){
+        return channel;
     }
 
     /*public PingResponse ping(PingRequest request) {
@@ -29,46 +44,79 @@ public class Client {
 
     public void open() throws Exception{
         
-        sequenceNumber++;
         ByteArrayOutputStream messageBytes;
+        String hashMessage;
         ByteString encryptedHashMessage;
+        byte[] publicKeyBytes;
+        KeyPair pair;
+
+        int sequenceNumber = new Random().nextInt(10000);
+        
         try{
+            pair = CryptographicFunctions.createKeyPair();
+            publicKeyBytes = pair.getPublic().getEncoded();
+            privateKey = pair.getPrivate();
+
             messageBytes = new ByteArrayOutputStream();
-            messageBytes.write(clientPublicKeyBytes);
+            messageBytes.write(publicKeyBytes);
             messageBytes.write(":".getBytes());
             messageBytes.write(String.valueOf(sequenceNumber).getBytes());
-            encryptedHashMessage = createHashMessage(messageBytes);
+            
+            hashMessage = CryptographicFunctions.hashString(new String(messageBytes.toByteArray()));
+            encryptedHashMessage = ByteString.copyFrom(CryptographicFunctions
+            .encrypt(privateKey, hashMessage.getBytes()));
         }
         catch (Exception e){
-            System.out.println(e);
+            logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
             return;
         }
 
 		openAccountRequest request = openAccountRequest.newBuilder()
-        .setPublicKeyClient(ByteString.copyFrom(publicKey.getEncoded()))
-        .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage)
-        .build();
+        .setPublicKeyClient(ByteString.copyFrom(publicKeyBytes))
+        .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage).build();     // TO DO fix sequence number
 
-		openAccountResponse response = stub.openAccount(request);
+		openAccountResponse response = stub.withDeadlineAfter(7000, TimeUnit.MILLISECONDS).openAccount(request);
+
+        if(response.getSequenceNumber() != sequenceNumber + 1){
+            logger.log("Trudy detected. eliminate");
+            return;
+        }
         
         try{
             messageBytes = new ByteArrayOutputStream();
-            messageBytes.write(clientPublicKeyBytes);
+            messageBytes.write(String.valueOf(response.getBalance()).getBytes());
             messageBytes.write(":".getBytes());
-            messageBytes.write(String.valueOf(sequenceNumber+1).getBytes());
+            messageBytes.write(String.valueOf(response.getSequenceNumber()).getBytes());
             
-            String hashMessageString = decrypt(privateKey, response.getHashMessage().toByteArray()); //incompatible types: byte[] cannot be converted to java.security.Key
-            if(!verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
-                System.out.println("message integrity exception should be thrown because of your dumbself");//throw new MessageIntegrityException();
+            serverPublicKey = CryptographicFunctions.getServerPublicKey("../crypto/");
+            String hashMessageString = CryptographicFunctions.decrypt(serverPublicKey.getEncoded(), response.getHashMessage().toByteArray()); 
+            if(!CryptographicFunctions.verifyMessageHash(messageBytes.toByteArray(), hashMessageString)){
+                logger.log("fake server detected. eliminate");
+                return;
+            }
         
-        }catch(Exception ex){
-            System.err.println("Exception with message: " + ex.getMessage() + " and cause:" + ex.getCause());
+        }catch(Exception e){
+            logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
+            return;
         }
+
+        try{
+            int localUserID = CryptographicFunctions.saveKeyPair(pair); 
+            
+            List<Integer> nonce = new ArrayList<>(sequenceNumber);
+            //if(!nonces.get(localUserID).contains(nonce))
+            nonces.put(localUserID, nonce);
+            System.out.println("Your local user id: " + localUserID);
+        }
+        catch(Exception e){
+            logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
+        }
+
         
-        //TODO validate response
 		System.out.println(response);
-        
     }
+
+
 
     public void channelEnd() {
         channel.shutdownNow();

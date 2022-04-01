@@ -1,5 +1,9 @@
 package sec.bftb.client;
 
+import java.util.Scanner;
+
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import sec.bftb.grpc.Contract.*;
 
 public class ClientMain {
@@ -13,14 +17,15 @@ public class ClientMain {
 			System.out.printf("arg[%d] = %s%n", i, args[i]);
 		}
 
-		if (args.length != 1) {
+		if (args.length != 2) {
 			System.err.println("Invalid Number of Arguments");
 			myObj.close();
 			return;
 		} 
 
-		final int port = Integer.parseInt(args[0]);
-		final String target = "localhost:" + port;
+		final String host = args[0];
+		final int port = Integer.parseInt(args[1]);
+		final String target = host + ":" + port;
 
 		String[] command;
 		String str;
@@ -37,13 +42,10 @@ public class ClientMain {
 
 				try{
 					switch (command[0]) {
-						case "signup":
-							user.signup();
-							break;
 						case "open":
 							user.open();
 							break;
-						case "send":
+						/*case "send":
 							user.send(ByteString.copyFromUtf8(command[1]), Float.parseFloat(command[2]));
 							break;
 						case "check":
@@ -57,7 +59,7 @@ public class ClientMain {
 							break;
 						case "mov": //for debug
 							user.checkMovement(Integer.parseInt(command[1]));
-							break;
+							break;*/
 						case "help":
 							System.out.printf("Avaliable operations:\n");
 							//System.out.printf(" - signup -> create credentials (necessary only once) \n");
@@ -79,7 +81,11 @@ public class ClientMain {
 						System.out.println("Server unavailable.");
 						System.exit(0);
 					}
-				}	
+					else
+						System.out.println(e.getStatus().getDescription());
+				}catch(Exception ex){
+					System.out.println("Exception with message: " + ex.getMessage() + " and cause:" + ex.getCause());
+				} 	
 			}
 			myObj.close();
 			user.getChannel().shutdownNow();
