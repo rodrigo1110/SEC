@@ -9,7 +9,9 @@ public enum ErrorMessage {
     SOURCE_ACCOUNT_DOESNT_EXIST("The source account does not exist"),
     DESTINATION_ACCOUNT_DOESNT_EXIST("The destination account does not exist"),
     NOT_ENOUGH_BALANCE("The account balance is not sufficient "),
-    NO_SUCH_TRANSFER("Transfer not found");
+    NO_SUCH_TRANSFER("Transfer not found"),
+    INVALID_STATUS("Transfer already accepted"),
+    INVALID_RECEIVER("User is not the right receiver of the transfer");
 
     
     public final String label;

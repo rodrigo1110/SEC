@@ -97,6 +97,44 @@ public class ServerRepo {
         }
     }
 
+    public String getTransferStatus(int id) throws SQLException {
+        try {
+            String query = "SELECT transferStatus FROM movement WHERE movementId=?";
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setInt(1, id);
+
+            resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getString("transferStatus");             
+            }
+            else{
+                return "-1";
+            }
+        } finally{
+            closeConnection();
+        }
+    }
+
+    public String getDestinationUser(int id) throws SQLException {
+        try {
+            String query = "SELECT destinationAccount FROM movement WHERE movementId=?";
+            connection = this.newConnection();
+            statement = connection.prepareStatement(query);
+            statement.setInt(1, id);
+
+            resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getString("destinationAccount");             
+            }
+            else{
+                return "-1";
+            }
+        } finally{
+            closeConnection();
+        }
+    }
+
 
 
     public List<Movement> getPendingMovements(String pubKey) throws SQLException{

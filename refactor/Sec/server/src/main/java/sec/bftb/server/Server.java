@@ -238,13 +238,25 @@ public class Server {
 
             if(!CryptographicFunctions.verifyMessageHash(messageBytes.toByteArray(), hashMessageString))
                 throw new ServerException(ErrorMessage.MESSAGE_INTEGRITY);
-        
+
 
             //Checks if user exists and obtains his balance
             float receiverBalance = this.serverRepo.getBalance(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()));
             if (receiverBalance == -1)
                 throw new ServerException(ErrorMessage.NO_SUCH_USER);
+
+            String destinationUser = this.serverRepo.getDestinationUser(transferID);
+            if(!destinationUser.equals(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()))){
+                throw new ServerException(ErrorMessage.INVALID_RECEIVER);
+            }
             
+            String status = this.serverRepo.getTransferStatus(transferID);
+            if(!status.equals("PENDING")){
+                throw new ServerException(ErrorMessage.INVALID_STATUS);
+            }
+
+            
+
             int flag = this.serverRepo.receiveAmount(transferID, "APPROVED", receiverBalance);
             if(flag == -1)
                 throw new ServerException(ErrorMessage.NO_SUCH_TRANSFER);
@@ -267,7 +279,6 @@ public class Server {
             return response;
         }  
         catch(GeneralSecurityException e){
-            logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
             throw new GeneralSecurityException(e); 
         }
     }

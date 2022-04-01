@@ -1,5 +1,6 @@
 package sec.bftb.client;
 
+import java.security.GeneralSecurityException;
 import java.util.Scanner;
 
 import javax.lang.model.util.ElementScanner6;
@@ -103,12 +104,13 @@ public class ClientMain {
 					}
 					else
 						logger.log(e.getStatus().getDescription());
+				}catch(GeneralSecurityException e){
+					logger.log("Invalid key pair");
 				}catch(Exception ex){
 					logger.log("Exceeeption with message: " + ex.getMessage() + " and cause:" + ex.getCause());
 				} 	
 			}
 			myObj.close();
-			//user.getChannel().shutdownNow();
 
 		}catch(Exception ex){
 			logger.log("Exceeption with message: " + ex.getMessage() + " and cause:" + ex.getCause());
