@@ -30,12 +30,10 @@ public class ServerRepo {
         this.dbUsername = System.getenv("DB_USERNAME");
         this.dbPassword = System.getenv("DB_PASSWORD");
         this.dbDir = System.getenv("DB_DIR");
+        System.out.println("criei o repo\n");
 
         try {
-            Connection connection = this.newConnection();
-            Statement stmt = connection.createStatement();
-            stmt.execute("CREATE DATABASE IF NOT EXISTS remotedocs_db");
-            this.logger.log("Database created successfully!");
+            connection = this.newConnection();
 
             ScriptRunner scriptRunner = new ScriptRunner(connection);
             scriptRunner.setLogWriter(null);
@@ -43,6 +41,14 @@ public class ServerRepo {
             this.logger.log("Database structure created successfully!");
         } catch (SQLException | FileNotFoundException e) {
             this.logger.log(e.getMessage());
+        }
+        finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) { 
+                    /* Ignored */}
+            }
         }
     }
 
@@ -76,13 +82,13 @@ public class ServerRepo {
         }
     }
 
-    public void createAccount(String pubKey, Integer balance) throws SQLException {
+    public void openAccount(String pubKey, Float balance) throws SQLException {
         try {
             String query = "INSERT INTO account (pubKey, balance) VALUES (?, ?)";
             connection = this.newConnection();
             statement = connection.prepareStatement(query);
             statement.setString(1, pubKey);
-            statement.setInt(2, balance);
+            statement.setFloat(2, balance);
             statement.executeUpdate();
         } finally {
             closeConnection();

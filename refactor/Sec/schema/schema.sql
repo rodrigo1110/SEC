@@ -2,9 +2,8 @@ DROP TABLE IF EXISTS account;
 DROP TABLE IF EXISTS movement;
 CREATE TABLE account
 (
-    accountId INTEGER       NOT NULL PRIMARY KEY,
-    pubKey    VARCHAR(5000) NOT NULL,
-    balance   INTEGER       NOT NULL
+    pubKey    VARCHAR(5000) NOT NULL PRIMARY KEY,
+    balance   REAL       NOT NULL
 );
 
 CREATE TABLE movement

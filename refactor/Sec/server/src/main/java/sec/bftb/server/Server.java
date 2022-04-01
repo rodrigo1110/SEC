@@ -17,6 +17,10 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
+import java.io.*;
+import java.security.*;
+import java.sql.SQLException;
+import java.util.*;
 
 
 
@@ -68,7 +72,7 @@ public class Server {
         
         //getBalance (if!=-1) -> já existe -> devolve erros
         //see if key already exists in db (if it does throw user already existent exception (must also sign exceptions)) - Larissa
-        //save in database - Larissa
+            this.serverRepo.openAccount(Base64.getEncoder().encodeToString(clientPublicKey.toByteArray()), INITIAL_BALANCE);
 
             ByteArrayOutputStream replyBytes = new ByteArrayOutputStream();
             replyBytes.write(String.valueOf(INITIAL_BALANCE).getBytes());
