@@ -130,7 +130,7 @@ public class Server {
 
             int nextId = this.serverRepo.getMaxTranferId() + 1;
             this.serverRepo.addTransfer(Base64.getEncoder().encodeToString(sourcePublicKey.toByteArray()),
-            Base64.getEncoder().encodeToString(destinationPublicKey.toByteArray()), amount, nextId); 
+            Base64.getEncoder().encodeToString(destinationPublicKey.toByteArray()), amount, nextId, "PENDING"); 
 
             
 

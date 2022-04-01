@@ -94,15 +94,16 @@ public class ServerRepo {
         }
     }
 
-    public void addTransfer(String srcPubKey, String destPubKey, Float amount, int movementId) throws SQLException {
+    public void addTransfer(String srcPubKey, String destPubKey, Float amount, int movementId, String trasferStatus) throws SQLException {
         try {
-            String query = "INSERT INTO movement (movementId, amount, sourceAccount, destinationAccount) VALUES (?, ?, ?, ?)";
+            String query = "INSERT INTO movement (movementId, amount, sourceAccount, destinationAccount, transferStatus) VALUES (?, ?, ?, ?, ?)";
             connection = this.newConnection();
             statement = connection.prepareStatement(query);
             statement.setInt(1, movementId);
             statement.setFloat(2, amount);
             statement.setString(3, srcPubKey);
             statement.setString(4, destPubKey);
+            statement.setString(5, trasferStatus);
             statement.executeUpdate();
         } finally {
             closeConnection();
