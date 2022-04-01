@@ -50,13 +50,14 @@ public class Client {
 
     //-----------------------------------Open account----------------------------
 
-    public void open() throws Exception{
+    public void open(String password) throws Exception{
         
         ByteArrayOutputStream messageBytes;
         String hashMessage;
         ByteString encryptedHashMessage;
         byte[] publicKeyBytes;
         KeyPair pair;
+        int localUserID = 0, randPass = 0;
 
         int sequenceNumber = new Random().nextInt(10000);
         
@@ -103,12 +104,16 @@ public class Client {
                 logger.log("Message reply integrity compromissed.");
                 return;
             }
-        
-            int localUserID = CryptographicFunctions.saveKeyPair(pair); 
-            
+     
+            Map<Integer,Integer> valuePair = CryptographicFunctions.saveKeyPair(pair,password); 
+            for(Map.Entry<Integer,Integer> entry : valuePair.entrySet()){
+                localUserID = entry.getKey();
+                randPass = entry.getValue();
+                break;
+            }
             List<Integer> nonce = new ArrayList<>(sequenceNumber);
             nonces.put(localUserID, nonce);
-            System.out.println("Your local user id: " + localUserID);
+            System.out.println("Local user id: " + localUserID + ", Local access password: " + randPass + "-" + password);
         }
         catch(Exception e){
             logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
@@ -121,7 +126,7 @@ public class Client {
 
 
 
-    public void send(int sourceID, int destID, float amount) throws Exception{
+    public void send(String password, int sourceID, int destID, float amount) throws Exception{
         
         ByteArrayOutputStream messageBytes;
         String hashMessage;
@@ -133,7 +138,7 @@ public class Client {
 
         sequenceNumber = generateNonce(sourceID);
         try{
-            privateKey = CryptographicFunctions.getClientPrivateKey(sourceID);
+            privateKey = CryptographicFunctions.getClientPrivateKey(password);
             sourcePublicKeyBytes = CryptographicFunctions.getClientPublicKey(sourceID).getEncoded();
             destPublicKeyBytes = CryptographicFunctions.getClientPublicKey(destID).getEncoded();
 
@@ -195,7 +200,7 @@ public class Client {
     //---------------------------------Check account--------------------------------
 
 
-    public void check(int userID){
+    public void check(String password, int userID){
         
         ByteArrayOutputStream messageBytes;
         String hashMessage;
@@ -207,7 +212,7 @@ public class Client {
 
         sequenceNumber = generateNonce(userID);
         try{
-            privateKey = CryptographicFunctions.getClientPrivateKey(userID);
+            privateKey = CryptographicFunctions.getClientPrivateKey(password);
             publicKeyBytes = CryptographicFunctions.getClientPublicKey(userID).getEncoded();
         
             messageBytes = new ByteArrayOutputStream();
@@ -270,7 +275,7 @@ public class Client {
 
 
 
-    public void receive(int userID, int transferID){
+    public void receive(String password, int userID, int transferID){
         ByteArrayOutputStream messageBytes;
         String hashMessage;
         int sequenceNumber;
@@ -281,7 +286,7 @@ public class Client {
 
         sequenceNumber = generateNonce(userID);
         try{
-            privateKey = CryptographicFunctions.getClientPrivateKey(userID);
+            privateKey = CryptographicFunctions.getClientPrivateKey(password);
             publicKeyBytes = CryptographicFunctions.getClientPublicKey(userID).getEncoded();
         
             messageBytes = new ByteArrayOutputStream();
@@ -338,7 +343,7 @@ public class Client {
 
 
     //----------------------------Audit-----------------------------
-    public void audit(int userID){
+    public void audit(String password, int userID){
         
         ByteArrayOutputStream messageBytes;
         String hashMessage;
@@ -350,7 +355,7 @@ public class Client {
 
         sequenceNumber = generateNonce(userID);
         try{
-            privateKey = CryptographicFunctions.getClientPrivateKey(userID);
+            privateKey = CryptographicFunctions.getClientPrivateKey(password);
             publicKeyBytes = CryptographicFunctions.getClientPublicKey(userID).getEncoded();
         
             messageBytes = new ByteArrayOutputStream();

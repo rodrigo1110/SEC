@@ -49,43 +49,44 @@ public class ClientMain {
 				try{
 					switch (command[0]) {
 						case "open":
-							user.open();
+							if(command.length == 2)
+								user.open(command[1]);
+							else
+								System.out.printf("Open command must have exactly 1 argument: Password.%n");
 							break;
 						case "send":
-							if(command.length == 4)
-								user.send(Integer.parseInt(command[1]), Integer.parseInt(command[2]),Float.parseFloat(command[3]));
+							if(command.length == 5)
+								user.send(command[1], Integer.parseInt(command[2]), Integer.parseInt(command[3]),Float.parseFloat(command[4]));
 							else
-								System.out.printf("Send command must have exactly 3 arguments: senderUserID receiverUserID AmoutOfTransfer.%n");
+								System.out.printf("Send command must have exactly 4 arguments: Password senderUserID receiverUserID AmoutOfTransfer.%n");
 							break;
 						case "check":
-							if(command.length == 2)
-								user.check(Integer.parseInt(command[1]));
+							if(command.length == 3)
+								user.check(command[1], Integer.parseInt(command[1]));
 							else 
-								System.out.printf("Check command must have exactly 1 argument: UserID.%n");
+								System.out.printf("Check command must have exactly 2 arguments: Password UserID.%n");
 							break;
 						case "receive":
-							if(command.length == 3)
-								user.receive(Integer.parseInt(command[1]), Integer.parseInt(command[2]));
+							if(command.length == 4)
+								user.receive(command[1], Integer.parseInt(command[2]), Integer.parseInt(command[3]));
 							else
-								System.out.printf("Receive command must have exactly 2 arguments: UserID TransferId.%n");
+								System.out.printf("Receive command must have exactly 3 arguments: Password UserID TransferId.%n");
 							break;
 						case "audit":
-							if(command.length == 2)
-								user.audit(Integer.parseInt(command[1]));
+							if(command.length == 3)
+								user.audit(command[1], Integer.parseInt(command[2]));
 							else
-								System.out.printf("Audit command must have exactly 1 argument: UserID.%n");
+								System.out.printf("Audit command must have exactly 2 arguments: Password UserID.%n");
 							break;
-						/*case "mov": //for debug
-							user.checkMovement(Integer.parseInt(command[1]));
-							break;*/
+						
 						case "help":
 							System.out.printf("Avaliable operations:\n");
 							//System.out.printf(" - signup -> create credentials (necessary only once) \n");
-							System.out.printf(" - open -> open account \n");
-							System.out.printf(" - send (1) (2) (3) -> (senderUserID) (receiverUserID) (AmoutOfTransfer) \n");
-							System.out.printf(" - check (1)-> check balance and pending movements of account (1) \n");
-							System.out.printf(" - receive (1) (2) -> approve movement (2) with account(1)  \n");
-							System.out.printf(" - audit (1) -> check balance and all movements of account (1) \n");
+							System.out.printf(" - open (1) -> open account \n");
+							System.out.printf(" - send (1) (2) (3) (4) -> send (4) to user (3) from user (2) \n");
+							System.out.printf(" - check (1) (2)-> check balance and pending movements of account (2) \n");
+							System.out.printf(" - receive (1) (2) (3) -> approve movement (3) with account (2)  \n");
+							System.out.printf(" - audit (1) (2) -> check balance and all movements of account (2) \n");
 							System.out.printf(" - exit\n");
 							break;
 						case "exit":

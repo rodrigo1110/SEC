@@ -3,9 +3,13 @@ package sec.bftb.crypto;
 import javax.crypto.Cipher;
 import java.security.*;
 import java.security.spec.*;
+import java.util.Map;
+import java.util.Random;
+import java.util.TreeMap;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.file.*;
+
 
 
 public class CryptographicFunctions{
@@ -21,10 +25,10 @@ public class CryptographicFunctions{
     }
       
 
-    public static int saveKeyPair (KeyPair keypair) throws Exception{
+    public static Map<Integer,Integer> saveKeyPair (KeyPair keypair, String password) throws Exception{
         
         OutputStream os;
-        
+        int rand;
         Key publicKey = keypair.getPublic();
         Key privateKey = keypair.getPrivate();
         int cont = 10000;
@@ -40,15 +44,20 @@ public class CryptographicFunctions{
         os.write(publicKey.getEncoded());
         os.close();
 
-
-        file = new File("../crypto/keys/privateKeys/" + cont + "-PrivateKey");
+        do{
+            rand = new Random().nextInt(100);
+            file = new File("../crypto/keys/privateKeys/" + rand + "-" + password + "-PrivateKey");
+        } while(!file.createNewFile());
     
         System.out.println("New file created: " + file.getName());
         os = new FileOutputStream(file);
         os.write(privateKey.getEncoded());
         os.close();
 
-        return cont;
+        Map<Integer,Integer> pair = new TreeMap<>();
+        pair.put(cont,rand);
+
+        return pair;
     }
 
 
@@ -77,15 +86,15 @@ public class CryptographicFunctions{
         }
     }
     
-    public static Key getClientPrivateKey(int userID) throws Exception {
+    public static Key getClientPrivateKey(String password) throws Exception {
         try{
-            byte[] keyBytes = Files.readAllBytes(Paths.get("../crypto/keys/privateKeys/" + userID + "-PrivateKey"));
+            byte[] keyBytes = Files.readAllBytes(Paths.get("../crypto/keys/privateKeys/" + password + "-PrivateKey"));
         
             PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
             KeyFactory kf = KeyFactory.getInstance("RSA");
             return kf.generatePrivate(spec);
         }catch(IOException e){
-            throw new Exception("Client's " + userID + " private key not found");
+            throw new Exception("Client's " + password + " private key not found");
         }
     }
 
