@@ -2,6 +2,8 @@ package sec.bftb.server.exceptions;
 
 public enum ErrorMessage {
     
+    MESSAGE_INTEGRITY("Message integrity compromissed."),
+    SEQUENCE_NUMBER("Invalid Sequence Number, possible replay attack detected.");
     /*INVALID_CREDENTIALS("The username or password are incorrect."),
     INVALID_PASSWORD("The password must have at least 8 characters-"),
     INVALID_USERNAME("The username cannot be empty"),

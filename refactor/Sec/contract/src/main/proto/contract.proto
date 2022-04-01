@@ -9,6 +9,7 @@ message PingResponse {
 	string outputText = 1;
 }
 
+
 message openAccountRequest{
 	bytes publicKeyClient = 1;
 	int32 sequenceNumber = 2;
