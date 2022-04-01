@@ -13,6 +13,7 @@ import sec.bftb.grpc.BFTBankingGrpc;
 import java.io.ByteArrayOutputStream;
 import com.google.common.primitives.Bytes;
 import com.google.protobuf.ByteString;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -21,11 +22,8 @@ import java.io.*;
 import java.security.*;
 import java.sql.SQLException;
 import java.util.*;
-
-
-
 import java.io.IOException;
-import java.security.*;
+
 
 public class Server {
 
@@ -157,6 +155,7 @@ public class Server {
 
 
 
+
     public checkAccountResponse check_account(ByteString clientPublicKey, int sequenceNumber, ByteString hashMessage) throws Exception{
         
         List <Integer> values = nonces.get(new String(clientPublicKey.toByteArray()));
@@ -181,9 +180,10 @@ public class Server {
             if (balance == -1)
                 throw new ServerException(ErrorMessage.NO_SUCH_USER);
             
-            //TODO query to obtain transfer ids that are pending acceptance by the user
+            //TODO query to obtain transfer ids (and respective users and money involved) that are pending acceptance --> List of movements
 
-            List<Integer> changeLater = new ArrayList<>(); // substitute later for transfer ids list
+
+            List<Movement> changeLater = new ArrayList<>(); // substitute later for Movement list
             ByteArrayOutputStream replyBytes = new ByteArrayOutputStream();
             replyBytes.write(changeLater.toString().getBytes());
             replyBytes.write(":".getBytes());
@@ -209,6 +209,7 @@ public class Server {
             throw new GeneralSecurityException(e); 
         }
     }
+
 
 
 
@@ -289,9 +290,9 @@ public class Server {
             if (balance == -1)
                 throw new ServerException(ErrorMessage.USER_ALREADY_EXISTS);
             
-            //TODO query to obtain history of transfer ids that have been accepted by the user
+            //TODO query to obtain history of movements that have been accepted by the user
 
-            List<Integer> changeLater = new ArrayList<>(); // substitute later for transfer ids list
+            List<Movement> changeLater = new ArrayList<>(); // substitute later for transfer ids list
             ByteArrayOutputStream replyBytes = new ByteArrayOutputStream();
             replyBytes.write(changeLater.toString().getBytes());
             replyBytes.write(":".getBytes());

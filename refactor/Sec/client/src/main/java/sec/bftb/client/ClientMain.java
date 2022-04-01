@@ -95,9 +95,11 @@ public class ClientMain {
 							break;
 					}
 				}catch(StatusRuntimeException e){
-					if((e.getStatus().getCode().equals(Status.UNAVAILABLE.getCode()))){//server down
-						logger.log("Server unavailable.");
-						System.exit(0);
+					if((e.getStatus().getCode().equals(Status.UNAVAILABLE.getCode()))){
+						logger.log("Server unavailable at the moment.");
+					}
+					else if((e.getStatus().getCode().equals(Status.DEADLINE_EXCEEDED.getCode()))){
+						logger.log("Time deadline for request excedeed. Request or Response may have been intentionally dropped.");
 					}
 					else
 						logger.log(e.getStatus().getDescription());
@@ -106,7 +108,7 @@ public class ClientMain {
 				} 	
 			}
 			myObj.close();
-			user.getChannel().shutdownNow();
+			//user.getChannel().shutdownNow();
 
 		}catch(Exception ex){
 			logger.log("Exceeption with message: " + ex.getMessage() + " and cause:" + ex.getCause());

@@ -1,8 +1,15 @@
 syntax = "proto3";
 package sec.bftb.grpc;
 
+
+message Movement {
+	int32 movementID = 1;
+	int32 senderUserID = 2;
+	int32 receiverUserID = 3;
+	float amount = 4;
+}
+
 message PingRequest {
-	// No arguments required
 }
 	
 message PingResponse {
@@ -43,7 +50,7 @@ message checkAccountRequest{
 }
 
 message checkAccountResponse{
-	repeated int32 pendingMovements = 1;
+	repeated Movement pendingMovements = 1;
 	float balance = 2;
 	int32 sequenceNumber = 3;
 	bytes hashMessage = 4;
@@ -85,7 +92,7 @@ message auditRequest{
 }
 
 message auditResponse{
-	repeated int32 confirmedMovements = 1;
+	repeated Movement confirmedMovements = 1;
 	int32 sequenceNumber = 2;
 	bytes hashMessage = 3;
 }

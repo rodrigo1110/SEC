@@ -3,7 +3,6 @@ package sec.bftb.client;
 import java.io.ByteArrayOutputStream;
 import java.security.Key;
 import java.security.KeyPair;
-import java.util.concurrent.TimeUnit;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
@@ -14,29 +13,25 @@ import com.google.protobuf.ByteString;
 
 import sec.bftb.crypto.*;
 import sec.bftb.client.Logger;
+import sec.bftb.client.ServerFrontend;
 
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import sec.bftb.grpc.BFTBankingGrpc;
+
 import sec.bftb.grpc.Contract.*;
 
 public class Client {
-    private BFTBankingGrpc.BFTBankingBlockingStub stub;
-    private final ManagedChannel channel;
+
+    private String target;
     private Key privateKey, serverPublicKey;
     private final Logger logger;
+    private ServerFrontend frontend;
     private Map<Integer, List<Integer>> nonces = new TreeMap<>();
 
    
-    public Client(String target){
-        channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
-        stub = BFTBankingGrpc.newBlockingStub(channel);
+    public Client(String _target){
+        target = _target;
         logger = new Logger("Client", "App");
     }
 
-    public ManagedChannel getChannel(){
-        return channel;
-    }
 
     /*public PingResponse ping(PingRequest request) {
         return stub.ping(request);
@@ -50,7 +45,6 @@ public class Client {
         }while(nonces.get(userID) != null && nonces.get(userID).contains(sequenceNumber));
         return sequenceNumber;
     }
-
 
 
 
@@ -89,7 +83,9 @@ public class Client {
         .setPublicKeyClient(ByteString.copyFrom(publicKeyBytes))
         .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage).build();     
 
-		openAccountResponse response = stub.withDeadlineAfter(7000, TimeUnit.MILLISECONDS).openAccount(request);
+        frontend = new ServerFrontend(target);
+		openAccountResponse response = frontend.openAccount(request);
+        frontend.close();
         if(response.getSequenceNumber() != sequenceNumber + 1){
             logger.log("Invalid sequence number. Possible replay attack detected.");
             return;
@@ -164,7 +160,9 @@ public class Client {
         .setPublicKeyReceiver(ByteString.copyFrom(destPublicKeyBytes)).setAmount(amount)
         .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage).build();   
 
-		sendAmountResponse response = stub.withDeadlineAfter(7000, TimeUnit.MILLISECONDS).sendAmount(request);
+		frontend = new ServerFrontend(target);
+        sendAmountResponse response = frontend.sendAmount(request);
+        frontend = new ServerFrontend(target);
         if(response.getSequenceNumber() != sequenceNumber + 1){
             logger.log("Invalid sequence number. Possible replay attack detected.");
             return;
@@ -195,6 +193,7 @@ public class Client {
 
 
     //---------------------------------Check account--------------------------------
+
 
     public void check(int userID){
         
@@ -229,7 +228,9 @@ public class Client {
         checkAccountRequest request = checkAccountRequest.newBuilder().setPublicKeyClient(ByteString.copyFrom(publicKeyBytes))
         .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage).build();   
 
-		checkAccountResponse response = stub.withDeadlineAfter(7000, TimeUnit.MILLISECONDS).checkAccount(request);
+        frontend = new ServerFrontend(target);
+		checkAccountResponse response = frontend.checkAccount(request);
+        frontend.close();
         if(response.getSequenceNumber() != sequenceNumber + 1){
             logger.log("Invalid sequence number. Possible replay attack detected.");
             return;
@@ -255,10 +256,11 @@ public class Client {
             nonces.put(userID, nonce);
 
             System.out.println("Pending movements: ");
-            for(int transferID : response.getPendingMovementsList()){
-                System.out.println(transferID + ", ");
+            for(Movement mov : response.getPendingMovementsList()){
+                System.out.println("Movement " + mov.getMovementID() + ":");
+                System.out.println("Sender: " + mov.getSenderUserID() + ", Receiver: " + mov.getReceiverUserID() + ", Amount: " + mov.getAmount());
             }
-            System.out.println("\nCurrent balance: " + response.getBalance());
+            System.out.println("\nYour current balance: " + response.getBalance());
         }
         catch(Exception e){
             logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
@@ -302,7 +304,9 @@ public class Client {
         receiveAmountRequest request = receiveAmountRequest.newBuilder().setPublicKeyClient(ByteString.copyFrom(publicKeyBytes))
         .setMovementId(transferID).setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage).build();   
 
-		receiveAmountResponse response = stub.withDeadlineAfter(7000, TimeUnit.MILLISECONDS).receiveAmount(request);
+		frontend = new ServerFrontend(target);
+        receiveAmountResponse response = frontend.receiveAmount(request);
+        frontend.close();
         if(response.getSequenceNumber() != sequenceNumber + 1){
             logger.log("Invalid sequence number. Possible replay attack detected.");
             return;
@@ -367,7 +371,9 @@ public class Client {
         auditRequest request = auditRequest.newBuilder().setPublicKeyClient(ByteString.copyFrom(publicKeyBytes))
         .setSequenceNumber(sequenceNumber).setHashMessage(encryptedHashMessage).build();   
 
-		auditResponse response = stub.withDeadlineAfter(7000, TimeUnit.MILLISECONDS).audit(request);
+		frontend = new ServerFrontend(target);
+        auditResponse response = frontend.audit(request);
+        frontend.close();
         if(response.getSequenceNumber() != sequenceNumber + 1){
             logger.log("Invalid sequence number. Possible replay attack detected.");
             return;
@@ -391,21 +397,14 @@ public class Client {
             nonces.put(userID, nonce);
 
             System.out.println("Accepted movements: ");
-            for(int transferID : response.getConfirmedMovementsList()){
-                System.out.println(transferID + ", ");
+            for(Movement mov : response.getConfirmedMovementsList()){
+                System.out.println("Movement " + mov.getMovementID() + ":");
+                System.out.println("Sender: " + mov.getSenderUserID() + ", Receiver: " + mov.getReceiverUserID() + ", Amount: " + mov.getAmount());
             }
         }
         catch(Exception e){
             logger.log("Exception with message: " + e.getMessage() + " and cause:" + e.getCause());
         }
 		System.out.println(response);
-    }
-
-
-
-
-
-    public void channelEnd() {
-        channel.shutdownNow();
     }
 }
